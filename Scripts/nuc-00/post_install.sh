@@ -119,26 +119,38 @@ case $SLES_VERSION in
   16)
     ISO_DOWNLOAD=https://download.opensuse.org/distribution/leap/16.0/offline/Leap-16.0-offline-installer-x86_64.install.iso
     ISO_LOCATION=/var/lib/libvirt/images/Leap-16.0-offline-installer-x86_64.install.iso
+    OS_VARIANT=opensuse15.6
   ;;
   15)
     ISO_DOWNLOAD=https://download.opensuse.org/distribution/leap/15.6/iso/openSUSE-Leap-15.6-DVD-x86_64-Media.iso
     ISO_LOCATION=/var/lib/libvirt/images/openSUSE-Leap-15.6-DVD-x86_64-Media.iso
+    OS_VARIANT=opensuse15.6
   ;;
 esac
 
-sudo wget ${ISO_DOWNLOAD} -P /var/lib/libvirt/images/
+[ ! -f  ${ISO_LOCATION} ] && { echo "NOTE: downloading ISO"; curl -O ${ISO_LOCATION} ${ISO_DOWNLOAD};  } || { echo "NOTE: ISO already exists"; }
 
 # Task: install VM (nuc-00-01)
-VM_HOSTNAME=NUC-00-01
-mkdir /var/lib/libvirt/images/$VM_HOSTNAME
-virt-install \
+# Note:  I determined it is probably not a good idea, in the long run, to use capital letters in the hostname
+VM_HOSTNAME=nuc-00-01
+[ ! -d  /var/lib/libvirt/images/${VM_HOSTNAME} ] && { sudo mkdir /var/lib/libvirt/images/${VM_HOSTNAME}; } 
+sudo virt-install \
   --name ${VM_HOSTNAME} \
   --memory 4096 \
   --vcpus 4 \
-  --disk path=/var/lib/libvirt/images/$VM_HOSTNAME/$VM_HOSTNAME.qcow2,size=40,format=qcow2 \
-  --os-variant sles16 \
+  --disk path=/var/lib/libvirt/images/${VM_HOSTNAME}/${VM_HOSTNAME}.qcow2,size=40,format=qcow2 \
+  --os-variant ${OS_VARIANT} \
   --network network=virbr0 \
   --graphics none \
   --location ${ISO_LOCATION} \
-  --extra-args="console=ttyS0 textmode=1 inst.auto=https://github.com/jradtke-rgs/enclave.kubernerdes.com/Files/${VM_HOSTNAME}-autoinst.yaml"
+  --extra-args="console=ttyS0 textmode=1 inst.auto=https://raw.githubusercontent.com/jradtke-rgs/enclave.kubernerdes.com/refs/heads/main/Files/${VM_HOSTNAME}-autoinst.xml ifcfg=eth0=10.10.12.8/22,10.10.12.1,8.8.8.8 hostname=${VM_HOSTNAME}.enclave.kubernerdes.com"
+
+sudo virsh destroy ${VM_HOSTNAME}
+sudo virsh undefine ${VM_HOSTNAME}
+sudo rm /var/lib/libvirt/images/${VM_HOSTNAME}/${VM_HOSTNAME}.qcow2
+
+ifcfg=eth0=10.0.10.50/24,10.0.10.1,10.0.10.1,10.0.10.2
+       └────┬────┘ └─────┬─────┘ └───┬───┘ └────┬────┘
+         interface  IP/mask   gateway   DNS1    DNS2
+# https://github.com/jradtke-rgs/enclave.kubernerdes.com/Files/${VM_HOSTNAME}-autoinst.yaml"
 
