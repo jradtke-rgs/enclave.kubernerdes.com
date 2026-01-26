@@ -1,0 +1,63 @@
+$TTL 2D
+12.10.10.in-addr.arpa.   IN SOA dns.enclave.kubernerdes.com. root.enclave.kubernerdes.com. (
+                        2025121802	; serial
+                        1D              ; refresh
+                        2H              ; retry
+                        1W              ; expiry
+                        2D )            ; minimum
+
+                        IN NS           nuc-00-01.enclave.kubernerdes.com.
+                        IN NS           nuc-00-02.enclave.kubernerdes.com.
+
+1	IN	PTR	sophos-xgs88.enclave.kubernerdes.com.
+2	IN	PTR	cisco-sg300-28.enclave.kubernerdes.com.
+3	IN	PTR	airport-extreme.enclave.kubernerdes.com.
+8	IN	PTR	nuc-00-01.enclave.kubernerdes.com.
+9	IN	PTR	nuc-00-02.enclave.kubernerdes.com.
+10	IN	PTR	kubernerd.enclave.kubernerdes.com.
+12	IN	PTR	librenms.enclave.kubernerdes.com.
+
+; Load Balancer for Harvester Cluster(s) - one LB per Harvester Cluster
+91	IN	PTR     harvester-edge-lb.enclave.kubernerdes.com.
+92	IN	PTR     harvester-dc-lb.enclave.kubernerdes.com.
+93	IN	PTR	hadrian.enclave.kubernerdes.com.
+
+; Harvester Edge Cluster
+100	IN	PTR	harvester-edge.enclave.kubernerdes.com.
+101	IN	PTR	nuc-01.enclave.kubernerdes.com.
+102	IN	PTR	nuc-02.enclave.kubernerdes.com.
+103	IN	PTR	nuc-03.enclave.kubernerdes.com.
+104	IN	PTR	nuc-04.enclave.kubernerdes.com.
+105	IN	PTR	nuc-05.enclave.kubernerdes.com.
+106	IN	PTR	nuc-06.enclave.kubernerdes.com.
+107	IN	PTR	nuc-07.enclave.kubernerdes.com.
+
+; Harvester DC Cluster
+110	IN	PTR	harvester-dc.enclave.kubernerdes.com.
+111	IN	PTR	asus-pc-01.enclave.kubernerdes.com.
+112	IN	PTR	asus-pc-02.enclave.kubernerdes.com.
+113	IN	PTR	asus-pc-03.enclave.kubernerdes.com.
+; XavierNX Cluster
+161	IN	PTR	xaviernx-01.enclave.kubernerdes.com.
+162	IN	PTR	xaviernx-02.enclave.kubernerdes.com.
+163	IN	PTR	xaviernx-03.enclave.kubernerdes.com.
+; Rancher Manager Cluster
+210	IN	PTR	rancher.enclave.kubernerdes.com.
+211	IN	PTR	rancher-01.enclave.kubernerdes.com.
+212	IN	PTR	rancher-02.enclave.kubernerdes.com.
+213	IN	PTR	rancher-03.enclave.kubernerdes.com.
+; Observability Cluster
+220	IN	PTR	observability.enclave.kubernerdes.com.
+221	IN	PTR	observability-01.enclave.kubernerdes.com.
+222	IN	PTR	observability-02.enclave.kubernerdes.com.
+223	IN	PTR	observability-03.enclave.kubernerdes.com.
+; RKE2 on Harvester Cluster 01
+230	IN	PTR	rke2-harv-dc-01.enclave.kubernerdes.com.
+231	IN	PTR	rke2-harv-dc-01-node-01.enclave.kubernerdes.com.
+232	IN	PTR	rke2-harv-dc-01-node-02.enclave.kubernerdes.com.
+233	IN	PTR	rke2-harv-dc-01-node-03.enclave.kubernerdes.com.
+
+250	IN	PTR	jarvis.enclave.kubernerdes.com.
+251	IN	PTR	spark-e.enclave.kubernerdes.com.
+252	IN	PTR	wheatley.enclave.kubernerdes.com.
+253	IN	PTR	blackmesa.enclave.kubernerdes.com.
