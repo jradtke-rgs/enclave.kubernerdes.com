@@ -12,6 +12,18 @@ echo "$MYUSER ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/$MYUSER-sudo
 # Task: disable power-saving
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
 
+# Task: Install/configure web server
+sudo zypper install httpd # While httpd package does not exist, zypper is pretty smart and pulls what it needs
+# Allow Directory Browsing via Apache Web Server
+sed -i -e 's/Options None/Options +Indexes/g' /etc/apache2/default-server.conf
+sudo systemctl enable apache2 --now
+sudo firewall-cmd --permanent --add-service=http
+sudo firewall-cmd --reload
+
+sudo zypper in git
+sudo mkdir /srv/www/htdocs/enclave.kubernerdes.com
+sudo git clone https://github.com/jradtke-rgs/enclave.kubernerdes.com.git /srv/www/htdocs/enclave.kubernerdes.com
+
 # Task: install libvirt
 # TODO: make this non-interactive.  Also might check before to see if already installed?
 sudo systemctl stop packagekit.service
@@ -99,39 +111,63 @@ else
   echo "NOTE: /dev/$DATA_DEVICE appears available for use."
 fi
 
-sudo mkdir -p /data/var/lib/libvirt/images/
 sudo parted -s /dev/$DATA_DEVICE mklabel gpt mkpart pri 2048s 100% set 1 lvm on
 sudo pvcreate /dev/${DATA_DEVICE}p1
 sudo vgcreate vg_data /dev/${DATA_DEVICE}p1
+
 sudo lvcreate -L500g -nlv_libvirt_images vg_data
 sudo mkfs.ext4 /dev/mapper/vg_data-lv_libvirt_images
 
+sudo lvcreate -L100g -nlv_www vg_data
+sudo mkfs.ext4 /dev/mapper/vg_data-lv_www
+
 sudo cp /etc/fstab /etc/fstab-$(date +%F)
 echo "# Managed devices and directories follow..." | sudo tee -a /etc/fstab
+
+sudo mkdir -p /data/var/lib/libvirt/images/
 echo "/dev/mapper/vg_data-lv_libvirt_images /data/var/lib/libvirt/images/ ext4 defaults 0 0" | sudo tee -a /etc/fstab
 sudo mount -a
 echo "/data/var/lib/libvirt/images/ /var/lib/libvirt/images/ none bind 0 0" | sudo tee -a /etc/fstab
 sudo mount -a
+
+mkdir -p /data/srv/www
+echo "/dev/mapper/vg_data-lv_www /data/srv/www/ ext4 defaults 0 0" | sudo tee -a /etc/fstab
+sudo mount -a
+mv /srv/www/* /data/srv/www/
+echo "/data/srv/www/ /srv/www none bind 0 0" | sudo tee -a /etc/fstab
+sudo mount -a
+
+# This is a multi-step process to download and mount the ISOS to be available as install source
+sudo mkdir -p /srv/www/htdocs/OS/openSUSE-Leap-15.6-DVD-x86_64-Media /srv/www/htdocs/OS/Leap-16.0-offline-installer-x86_64.install
+sudo mkdir -p /srv/www/htdocs/images/
 
 # Task: Download ISO Image to build VMs and store in KVM images directory
 SLES_VERSION=15
 case $SLES_VERSION in
   16)
     ISO_DOWNLOAD=https://download.opensuse.org/distribution/leap/16.0/offline/Leap-16.0-offline-installer-x86_64.install.iso
-    ISO_LOCATION=/var/lib/libvirt/images/Leap-16.0-offline-installer-x86_64.install.iso
+    ISO_LOCATION=/srv/www/htdocs/images/Leap-16.0-offline-installer-x86_64.install.iso
+    ISO_NAME=Leap-16.0-offline-installer-x86_64.install.iso
     OS_VARIANT=opensuse15.6
   ;;
   15)
     ISO_DOWNLOAD=https://download.opensuse.org/distribution/leap/15.6/iso/openSUSE-Leap-15.6-DVD-x86_64-Media.iso
-    ISO_LOCATION=/var/lib/libvirt/images/openSUSE-Leap-15.6-DVD-x86_64-Media.iso
+    ISO_LOCATION=/srv/www/htdocs/images/openSUSE-Leap-15.6-DVD-x86_64-Media.iso
     OS_VARIANT=opensuse15.6
+    ISO_NAME=openSUSE-Leap-15.6-DVD-x86_64-Media.iso
   ;;
 esac
 
-[ ! -f  ${ISO_LOCATION} ] && { echo "NOTE: downloading ISO"; curl -O ${ISO_LOCATION} ${ISO_DOWNLOAD};  } || { echo "NOTE: ISO already exists"; }
+[ ! -f  ${ISO_LOCATION} ] && { echo "NOTE: downloading ISO"; curl -L ${ISO_DOWNLOAD} -O ${ISO_LOCATION};  } || { echo "NOTE: ISO already exists"; }
+# https://download.opensuse.org/distribution/leap/15.6/iso/
+INSTALL_DESTINATION=$(echo ${ISO_NAME} | sed 's/.iso$//g')
+echo "# ISO Mounts follow..." | sudo tee -a /etc/fstab
+echo "${ISO_LOCATION} /srv/www/htdocs/OS/${INSTALL_DESTINATION} iso9660 defaults 0 0" | sudo tee -a /etc/fstab
+mount -a
 
 # Task: install VM (nuc-00-01)
 # Note:  I determined it is probably not a good idea, in the long run, to use capital letters in the hostname
+# TODO:  I will need to reference a "local/enclave version of autoinst.xml"
 VM_HOSTNAME=nuc-00-01
 [ ! -d  /var/lib/libvirt/images/${VM_HOSTNAME} ] && { sudo mkdir /var/lib/libvirt/images/${VM_HOSTNAME}; } 
 sudo virt-install \
@@ -142,15 +178,18 @@ sudo virt-install \
   --os-variant ${OS_VARIANT} \
   --network network=virbr0 \
   --graphics none \
-  --location ${ISO_LOCATION} \
-  --extra-args="console=ttyS0 textmode=1 inst.auto=https://raw.githubusercontent.com/jradtke-rgs/enclave.kubernerdes.com/refs/heads/main/Files/${VM_HOSTNAME}-autoinst.xml ifcfg=eth0=10.10.12.8/22,10.10.12.1,8.8.8.8 hostname=${VM_HOSTNAME}.enclave.kubernerdes.com"
+  --location http://10.10.12.10/OS/${INSTALL_DESTINATION} \
+  --extra-args="console=ttyS0 textmode=1 inst.auto=http://10.10.12.10/enclave.kubernerdes.com/Files/${VM_HOSTNAME}-autoinst.xml ifcfg=eth0=10.10.12.8/22,10.10.12.1,8.8.8.8 hostname=${VM_HOSTNAME}.enclave.kubernerdes.com"
 
+
+exit 0
+vm_cleanup() {
 sudo virsh destroy ${VM_HOSTNAME}
 sudo virsh undefine ${VM_HOSTNAME}
 sudo rm /var/lib/libvirt/images/${VM_HOSTNAME}/${VM_HOSTNAME}.qcow2
+}
 
 ifcfg=eth0=10.0.10.50/24,10.0.10.1,10.0.10.1,10.0.10.2
        └────┬────┘ └─────┬─────┘ └───┬───┘ └────┬────┘
          interface  IP/mask   gateway   DNS1    DNS2
-# https://github.com/jradtke-rgs/enclave.kubernerdes.com/Files/${VM_HOSTNAME}-autoinst.yaml"
 
