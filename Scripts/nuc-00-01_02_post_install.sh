@@ -38,16 +38,13 @@ case $(uname -n) in
     cp /etc/dhcpd.conf /etc/dhcpd.conf.$(date +%F)
     curl -o /etc/dhcpd.conf https://raw.githubusercontent.com/jradtke-rgs/enclave.kubernerdes.com/refs/heads/main/Files/nuc-00-01_etc_dhcpd.conf
     mkdir /etc/dhcpd.d/
-    curl -o /etc/dhcpd.conf https://raw.githubusercontent.com/jradtke-rgs/enclave.kubernerdes.com/refs/heads/main/Files/nuc-00-01_etc_dhcpd.d_dhcpd-host.conf
+    curl -o /etc/dhcpd.d/dhcpd-hosts.conf https://raw.githubusercontent.com/jradtke-rgs/enclave.kubernerdes.com/refs/heads/main/Files/nuc-00-01_etc_dhcpd.d_dhcpd-hosts.conf
+
+  sed -i -e 's/DHCPD_INTERFACE=""/DHCPD_INTERFACE="eth0"/g' /etc/sysconfig/dhcpd
+  systemctl enable dhcpd --now
+  systemctl status dhcpd
   ;;
 esac 
-
-## This was the old/previous configuration
-## curl -o /etc/dhcpd.conf https://raw.githubusercontent.com/jradtke-suse/kubernerd.kubernerdes.lab/refs/heads/main/Files/backups/10.10.12.8/kubernerd.kubernerdes.lab/etc/dhcpd.conf
-## curl -o /etc/dhcpd.d/dhcpd-hosts.conf https://raw.githubusercontent.com/jradtke-suse/kubernerd.kubernerdes.lab/refs/heads/main/Files/backups/10.10.12.8/kubernerd.kubernerdes.lab/etc/dhcpd.d/dhcpd-hosts.conf
-sed -i -e 's/DHCPD_INTERFACE=""/DHCPD_INTERFACE="eth0"/g' /etc/sysconfig/dhcpd
-systemctl enable dhcpd --now
-systemctl status dhcpd
 
 #### #### ####
 ## Install/configure SNMP
