@@ -13,8 +13,6 @@
 | Cloud Images | Download from vendor, or create your own (typically for Windows VMs) |
 
 
-Harvester Community Images - https://github.com/harvester/harvester/releases
-
 # Deployment 
 
 ## Harvester
@@ -22,8 +20,9 @@ Harvester Community Images - https://github.com/harvester/harvester/releases
 - Deploy node using USB boot
   - (we will briefly cover PXE boot)
 
-# Post-Install
+# Post-Deploy
 
+- Login to Harvester UI (set password)
 - Download Kubeconfig for Harvester
 - Create Networking for Virtual Machines
 - Create Namespace
