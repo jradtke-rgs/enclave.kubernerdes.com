@@ -11,6 +11,8 @@
 | DNS | You should have a working DNS environment - we need the IPs of the DNS Servers |
 | Harvester Image | You can find the community bits at Github (link below), or pull from Carbide |
 | Cloud Images | Download from vendor, or create your own (typically for Windows VMs) |
+| Password | to login to hosts, either at the console, or ssh |
+| Cluster Token | common phrase for nodes to join Harvester Cluster |
 
 
 # Deployment 
