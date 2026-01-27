@@ -20,7 +20,7 @@ Harvester Community Images - https://github.com/harvester/harvester/releases
 ## Harvester
 
 - Deploy node using USB boot
- - 
+ - (we will briefly cover PXE boot)
 
 # Post-Install
 
