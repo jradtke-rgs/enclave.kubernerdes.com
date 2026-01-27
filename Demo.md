@@ -34,5 +34,12 @@ Harvester Community Images - https://github.com/harvester/harvester/releases
 # Extra-curricular (if time permits)
 
 - Walkthrough of Rancher Manager integration
- 
+
+# Links
+[KVM for host](http://10.10.12.111/)  
+[harvester UI](http://harvester.homelab.kubernerdes.com)  
+[Rancher UI](http://rancher.homelab.kubernerdes.com)  
+   
+[Harvester Community Images](https://github.com/harvester/harvester/releases)    
+[Carbide Portal](https://portal.ranchercarbide.dev/product/)
 
