@@ -12,6 +12,48 @@ echo "$MYUSER ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/$MYUSER-sudo
 # Task: disable power-saving
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
 
+# **********************************
+# STORAGE
+# **********************************
+# Task: configure second disk
+# Ensure disk is not currently in-use
+DATA_DEVICE=nvme0n1
+
+if [ "$(sudo lsblk -f /dev/$DATA_DEVICE | wc -l)" -gt 2 ]; then
+  echo "ERROR: Disk appears to have existing partitions. \n  Cannot proceed"; exit 9
+else
+  echo "NOTE: /dev/$DATA_DEVICE appears available for use."
+fi
+
+sudo parted -s /dev/$DATA_DEVICE mklabel gpt mkpart pri 2048s 100% set 1 lvm on
+sudo pvcreate /dev/${DATA_DEVICE}p1
+sudo vgcreate vg_data /dev/${DATA_DEVICE}p1
+
+sudo lvcreate -L500g -nlv_libvirt_images vg_data
+sudo mkfs.ext4 /dev/mapper/vg_data-lv_libvirt_images
+
+sudo lvcreate -L100g -nlv_www vg_data
+sudo mkfs.ext4 /dev/mapper/vg_data-lv_www
+
+sudo cp /etc/fstab /etc/fstab-$(date +%F)
+echo "# Managed devices and directories follow..." | sudo tee -a /etc/fstab
+
+sudo mkdir -p /data/var/lib/libvirt/images/
+echo "/dev/mapper/vg_data-lv_libvirt_images /data/var/lib/libvirt/images/ ext4 defaults 0 0" | sudo tee -a /etc/fstab
+sudo mount -a
+echo "/data/var/lib/libvirt/images/ /var/lib/libvirt/images/ none bind 0 0" | sudo tee -a /etc/fstab
+sudo mount -a
+
+mkdir -p /data/srv/www
+echo "/dev/mapper/vg_data-lv_www /data/srv/www/ ext4 defaults 0 0" | sudo tee -a /etc/fstab
+sudo mount -a
+mv /srv/www/* /data/srv/www/
+echo "/data/srv/www/ /srv/www none bind 0 0" | sudo tee -a /etc/fstab
+sudo mount -a
+
+# **********************************
+# WEB SERVER
+# **********************************
 # Task: Install/configure web server
 sudo zypper install httpd # While httpd package does not exist, zypper is pretty smart and pulls what it needs
 # Allow Directory Browsing via Apache Web Server
@@ -20,10 +62,24 @@ sudo systemctl enable apache2 --now
 sudo firewall-cmd --permanent --add-service=http
 sudo firewall-cmd --reload
 
-sudo zypper in git
-sudo mkdir /srv/www/htdocs/enclave.kubernerdes.com
-sudo git clone https://github.com/jradtke-rgs/enclave.kubernerdes.com.git /srv/www/htdocs/enclave.kubernerdes.com
+# Setup WWW server with PHP - the PHP portion is optional
+# TODO: break this in to 2 sections: required/optional
+suseconnect -p sle-module-web-scripting/15.7/x86_64
+zypper --non-interactive install apache2 libyaml-devel
+zypper --non-interactive install php8 apache2-mod_php8
+php8 -v
 
+sudo zypper addrepo https://download.opensuse.org/repositories/devel:languages:misc/SLE_15_SP4/devel:languages:misc.repo
+sudo zypper refresh
+sudo zypper --non-interactive install libyaml
+sudo sed -i '965i extension=yaml.so' /etc/php8/apache2/php.ini
+
+systemctl enable apache2.service --now
+
+
+# **********************************
+# VIRTUALIZATION
+# **********************************
 # Task: install libvirt
 # TODO: make this non-interactive.  Also might check before to see if already installed?
 sudo systemctl stop packagekit.service
@@ -36,6 +92,29 @@ sudo systemctl enable virtqemud.socket --now
 sudo systemctl enable virtnetworkd.socket --now
 sudo systemctl enable virtstoraged.socket --now
 
+# **********************************
+# TOOLS and MISC
+# **********************************
+sudo zypper in git
+sudo mkdir /srv/www/htdocs/enclave.kubernerdes.com
+sudo git clone https://github.com/jradtke-rgs/enclave.kubernerdes.com.git /srv/www/htdocs/enclave.kubernerdes.com
+
+#### #### ####
+### Install kubectl
+sudo tee /etc/zypp/repos.d/kubernetes.repo <<EOF
+[kubernetes]
+name=Kubernetes
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/
+enabled=1
+gpgcheck=1
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/repomd.xml.key
+EOF
+sudo zypper refresh
+sudo zypper --non-interactive in kubectl
+
+# **********************************
+# NETWORKING
+# **********************************
 # Task: create a network bridge for the virtual machines (or.. if a bridge exists, figure out what it is)
 # TODO: this needs to be tested
 BRIDGE=$(ip link show type bridge up | grep -v 'docker' | awk -F': ' '/^[0-9]+:/ {print $2; exit}')
@@ -101,42 +180,9 @@ sudo virsh net-autostart virbr0
 # Verify
 virsh net-list --all
 
-# Task: configure second disk
-# Ensure disk is not currently in-use
-DATA_DEVICE=nvme0n1
-
-if [ "$(sudo lsblk -f /dev/$DATA_DEVICE | wc -l)" -gt 2 ]; then
-  echo "ERROR: Disk appears to have existing partitions. \n  Cannot proceed"; exit 9
-else
-  echo "NOTE: /dev/$DATA_DEVICE appears available for use."
-fi
-
-sudo parted -s /dev/$DATA_DEVICE mklabel gpt mkpart pri 2048s 100% set 1 lvm on
-sudo pvcreate /dev/${DATA_DEVICE}p1
-sudo vgcreate vg_data /dev/${DATA_DEVICE}p1
-
-sudo lvcreate -L500g -nlv_libvirt_images vg_data
-sudo mkfs.ext4 /dev/mapper/vg_data-lv_libvirt_images
-
-sudo lvcreate -L100g -nlv_www vg_data
-sudo mkfs.ext4 /dev/mapper/vg_data-lv_www
-
-sudo cp /etc/fstab /etc/fstab-$(date +%F)
-echo "# Managed devices and directories follow..." | sudo tee -a /etc/fstab
-
-sudo mkdir -p /data/var/lib/libvirt/images/
-echo "/dev/mapper/vg_data-lv_libvirt_images /data/var/lib/libvirt/images/ ext4 defaults 0 0" | sudo tee -a /etc/fstab
-sudo mount -a
-echo "/data/var/lib/libvirt/images/ /var/lib/libvirt/images/ none bind 0 0" | sudo tee -a /etc/fstab
-sudo mount -a
-
-mkdir -p /data/srv/www
-echo "/dev/mapper/vg_data-lv_www /data/srv/www/ ext4 defaults 0 0" | sudo tee -a /etc/fstab
-sudo mount -a
-mv /srv/www/* /data/srv/www/
-echo "/data/srv/www/ /srv/www none bind 0 0" | sudo tee -a /etc/fstab
-sudo mount -a
-
+# **********************************
+# VIRTUAL MACHINES DEPLOY
+# **********************************
 # This is a multi-step process to download and mount the ISOS to be available as install source
 sudo mkdir -p /srv/www/htdocs/OS/openSUSE-Leap-15.6-DVD-x86_64-Media /srv/www/htdocs/OS/Leap-16.0-offline-installer-x86_64.install
 sudo mkdir -p /srv/www/htdocs/images/
