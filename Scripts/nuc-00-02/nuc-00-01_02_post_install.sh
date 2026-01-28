@@ -1,0 +1,1 @@
+../nuc-00-01/nuc-00-01_02_post_install.sh
