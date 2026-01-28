@@ -1,6 +1,5 @@
 # Demo Walkthrough
 
-
 # Prerequisites
 
 | Item | Purpose/Reason |
@@ -13,7 +12,6 @@
 | Cloud Images | Download from vendor, or create your own (typically for Windows VMs) |
 | Password | to login to hosts, either at the console, or ssh |
 | Cluster Token | common phrase for nodes to join Harvester Cluster |
-
 
 # Deployment 
 
@@ -47,7 +45,6 @@
 - hauler - tool for pulling down software assets for distribution in airgap
 
 # Links
-[KVM for host](http://10.10.12.111/)  
 [harvester UI](http://harvester.homelab.kubernerdes.com)  
 [Rancher UI](http://rancher.homelab.kubernerdes.com)  
    
@@ -57,4 +54,7 @@
 [Hauler - Docs](https://docs.hauler.dev/docs/intro)
 [Carbide Portal](https://portal.ranchercarbide.dev/product/)
 
+## Videos, Walkthroughs, etc..
+[Harvester + Kasm - GPU Passthrough](https://www.youtube.com/watch?v=3tMfc0fUvk4)  
+[Kasm Technologies and Rancher Government Solutions Partner to Deliver Enterprise-Class Kubernetes-Powered VDI](https://www3-develop.kasmweb.com/alliance-partnership/rancher-government-solutions)
 
