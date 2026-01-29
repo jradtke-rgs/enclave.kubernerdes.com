@@ -1,0 +1,11 @@
+$TTL 2D
+14.10.10.in-addr.arpa.   IN SOA dns.enclave.kubernerdes.com. root.enclave.kubernerdes.com. (
+                        2025110401	; serial
+                        1D              ; refresh
+                        2H              ; retry
+                        1W              ; expiry
+                        2D )            ; minimum
+
+                        IN NS           nuc-00-01.enclave.kubernerdes.com.
+                        IN NS           nuc-00-02.enclave.kubernerdes.com.
+
