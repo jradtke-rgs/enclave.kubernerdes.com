@@ -47,7 +47,7 @@ backup_host() {
   for file in "${files[@]}"; do
     local target_dir="${dest}$(dirname "$file")"
     mkdir -p "$target_dir"
-    if scp -q "${fqdn}:${file}" "${dest}${file}"; then
+    if scp -q "${DEFAULT_SSH_USER}@${fqdn}:${file}" "${dest}${file}"; then
       echo "  OK: ${file}"
     else
       echo "  FAIL: ${file}"
