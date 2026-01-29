@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Backup configuration files from enclave hosts
 # Usage: ./backup_hosts.sh [hostname...]
