@@ -2,6 +2,8 @@
 
 This single repository contains the overview, architecture, and implementation steps to deploy RGS stack on small form factor PC (Intel NUC).
 
+This is NOT an official repository.  It is meant to be a quick way to build a lab environment using the "easy methods" to get things working.
+
 ## Status
 This is mostly a collection of scripts, notes, etc.. at this point.  It will change significantly to be more of a guide and reference.
 
