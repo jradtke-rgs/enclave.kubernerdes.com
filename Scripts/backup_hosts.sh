@@ -22,11 +22,11 @@ NUC_00_01_FILES=(
   /etc/dhcpd.conf
   /etc/dhcpd.d/dhcpd-hosts.conf
   /etc/named.conf
-  /var/lib/named/masters/db.enclave.kubernerdes.com
-  /var/lib/named/masters/db-12.10.10.in-addr.arpa
-  /var/lib/named/masters/db-13.10.10.in-addr.arpa
-  /var/lib/named/masters/db-14.10.10.in-addr.arpa
-  /var/lib/named/masters/db-15.10.10.in-addr.arpa
+  /var/lib/named/master/db.enclave.kubernerdes.com
+  /var/lib/named/master/db-12.10.10.in-addr.arpa
+  /var/lib/named/master/db-13.10.10.in-addr.arpa
+  /var/lib/named/master/db-14.10.10.in-addr.arpa
+  /var/lib/named/master/db-15.10.10.in-addr.arpa
 )
 
 NUC_00_02_FILES=(
