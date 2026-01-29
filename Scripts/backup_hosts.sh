@@ -16,6 +16,9 @@ DEFAULT_SSH_USER="root"
 
 NUC_00_FILES=(
   /etc/apache2/httpd.conf
+  /srv/www/htdocs/index.*
+  /srv/www/htdocs/kubernerdes.php
+  /srv/www/htdocs/harvester/harvester-edge/*
 )
 
 NUC_00_01_FILES=(
