@@ -13,12 +13,13 @@ DOMAIN="enclave.kubernerdes.com"
 DEFAULT_SSH_USER="root"
 
 # --- Per-host file lists ---
-
+# Supports: plain files, wildcards (e.g. /path/*.conf), and
+# directories with trailing slash (e.g. /path/dir/) for recursive copy.
 NUC_00_FILES=(
   /etc/apache2/httpd.conf
   /srv/www/htdocs/index.*
   /srv/www/htdocs/kubernerdes.php
-  /srv/www/htdocs/harvester/harvester-edge/*
+  /srv/www/htdocs/harvester/harvester-edge/
 )
 
 NUC_00_01_FILES=(
@@ -48,13 +49,37 @@ backup_host() {
   local fqdn="${host}.${DOMAIN}"
   echo "=== Backing up ${host} (${fqdn}) ==="
   for file in "${files[@]}"; do
-    local target_dir="${dest}$(dirname "$file")"
-    mkdir -p "$target_dir"
-    if scp -q "${DEFAULT_SSH_USER}@${fqdn}:${file}" "${dest}${file}"; then
-      echo "  OK: ${file}"
+    if [[ "$file" == */ ]]; then
+      # Directory: use scp -r, copy into parent directory
+      local clean_path="${file%/}"
+      local target_dir="${dest}$(dirname "$clean_path")"
+      mkdir -p "$target_dir"
+      if scp -r -q "${DEFAULT_SSH_USER}@${fqdn}:${clean_path}" "${target_dir}/"; then
+        echo "  OK: ${file}"
+      else
+        echo "  FAIL: ${file}"
+        ((errors++))
+      fi
+    elif [[ "$file" == *[\*\?\[]* ]]; then
+      # Wildcard: copy matching files into the target directory
+      local target_dir="${dest}$(dirname "$file")"
+      mkdir -p "$target_dir"
+      if scp -q "${DEFAULT_SSH_USER}@${fqdn}:${file}" "${target_dir}/"; then
+        echo "  OK: ${file}"
+      else
+        echo "  FAIL: ${file}"
+        ((errors++))
+      fi
     else
-      echo "  FAIL: ${file}"
-      ((errors++))
+      # Regular file
+      local target_dir="${dest}$(dirname "$file")"
+      mkdir -p "$target_dir"
+      if scp -q "${DEFAULT_SSH_USER}@${fqdn}:${file}" "${dest}${file}"; then
+        echo "  OK: ${file}"
+      else
+        echo "  FAIL: ${file}"
+        ((errors++))
+      fi
     fi
   done
 
