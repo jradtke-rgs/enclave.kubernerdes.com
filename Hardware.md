@@ -20,3 +20,23 @@
 | 1 | power strip |
 | 1 | mouse |
 | 1 | keyboard |
+
+
+| Port | Host | Purpose |
+|:--:|:------|:------|
+| 1  | nuc-00 |
+| 2  | nuc-01 |
+| 3  | nuc-02 |
+| 4  | nuc-03 |
+| 5  | nuc-01-vms |
+| 6  | nuc-02-vms |
+| 7  | nuc-03-vms |
+| 8  | nuc-01-kvm |
+| 9  | nuc-02-kvm |
+| 10 | nuc-03-kvm |
+| 11 | | 
+| 12 | | 
+| 13 | | 
+| 14 | | 
+| 15 | | 
+| 16 | uplink | 
