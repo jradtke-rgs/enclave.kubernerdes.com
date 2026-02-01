@@ -22,21 +22,14 @@
 | 1 | keyboard |
 
 
-| Port | Host | Purpose |
-|:--:|:------|:------|
-| 1  | nuc-00 |
-| 2  | nuc-01 |
-| 3  | nuc-02 |
-| 4  | nuc-03 |
-| 5  | nuc-01-vms |
-| 6  | nuc-02-vms |
-| 7  | nuc-03-vms |
-| 8  | nuc-01-kvm |
-| 9  | nuc-02-kvm |
-| 10 | nuc-03-kvm |
-| 11 | | 
-| 12 | | 
-| 13 | | 
-| 14 | | 
-| 15 | | 
-| 16 | uplink | 
+| Port | Host     | Purpose | Port | Host     | Purpose |
+|:--:|:-----------|:------|:--:|:-------|:----|
+| 1  | nuc-00     | | 9 | nuc-02-kvm | |
+| 2  | nuc-01     | | 10 | nuc-02-kvm | | 
+| 3  | nuc-02     | | 11 | |
+| 4  | nuc-03     | | 12 | |
+| 5  | nuc-01-vms | | 13 | |
+| 6  | nuc-02-vms | | 14 | |
+| 7  | nuc-03-vms | | 16 | |
+| 8  | nuc-01-kvm | | 16 | |
+
