@@ -15,6 +15,7 @@
 |:---:|:-------|
 | 3 | sipeed nanaKVM + HDMI cable + USB-C Cable |
 | 4 | Chicony A17-120P2A 20V 6A 120W Power Supply |
+| 3 | 1GB USB-C Network Adapter |
 | 1 | 8-port 1gb Network Switch |
 | 1 | portable monitor |
 | 1 | power strip |
