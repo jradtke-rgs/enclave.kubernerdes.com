@@ -9,7 +9,9 @@
 | nuc-02     | Harvester         | NUC13ANHi7  | 16  | i7-1360P  | 64  | 1024  | 1024  |
 | nuc-03     | Harvester         | NUC13ANHi7  | 16  | i7-1360P  | 64  | 1024  | 1024  |
 
-## Peripherals
+## Bill of Materials (BOM)
+
+This is "what goes in the case" 
 
 | Qty | Object | 
 |:---:|:-------|
@@ -22,6 +24,7 @@
 | 1 | power strip |
 | 1 | mouse |
 | 1 | keyboard |
+| 1 | [Beryl AX (GL-MT3000) Travel Router](https://store-us.gl-inet.com/collections/travel-routers/products/beryl-ax-gl-mt3000-pocket-sized-wi-fi-6-wireless-travel-gigabit-router) |
 
 
 | Port | Host     | Purpose | Port | Host       | Purpose |
