@@ -20,3 +20,5 @@ While this repo is available via HTTP/S, I will make all the content available o
 - Deploy Kubernetes using RMS (Leap Micro + K3s)
 - Deploy Kubernetes using RMS (Leap + RKE2)
 
+![Kubernerdes Enclave Hardware](Images/KubernerdesEnclaveHardware.png)
+
