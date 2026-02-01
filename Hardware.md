@@ -2,7 +2,7 @@
 
 ## Systems
 
-| System     | Purpose           | Model       | CPU | CPU model | Mem | Disk0 | Disk1 |
+| System     | Purpose           | Model       | CPU | CPU model | Mem | Disk0 (SSD) | Disk1 NVMe |
 |:-----------|:------------------|:------------|:----|:----------|:----|:------|:------|
 | nuc-00     | Admin Host        | NUC13ANHi7  | 16  | i7-1360P  | 64  | 1024  | 1024  |
 | nuc-01     | Harvester         | NUC13ANHi7  | 16  | i7-1360P  | 64  | 1024  | 1024  |
