@@ -1,6 +1,6 @@
 # README
 
-This single repository contains the overview, architecture, and implementation steps to deploy RGS stack on small form factor PC (Intel NUC).
+This single repository contains the overview, architecture, and implementation steps to deploy the components of the RGS stack on small form factor PC (Intel NUC).  A similar REPO will be created later demonstrating the same, but using RGS bits and endpoints.
 
 This is NOT an official repository.  It is meant to be a quick way to build a lab environment using the "easy methods" to get things working.
 
@@ -9,8 +9,15 @@ Status: Work in Progress (Jan 2026)
 
 This is mostly a collection of scripts, notes, etc.. at this point.  It will change significantly to be more of a guide and reference.
 
+## Goal
+A self-sustaining network enclave with a
+* Infrastructure node hosting DNS, PXE build
+* 3-node Harvester cluster 
+* Rancher Manager Server
+* Kubernetes cluster hosting Applications
+
 ## Environment Overview
-The "admin host" (nuc-00) will have access to the Internet to pull down necessary bits, including this REPO. (either community or RGS)
+The "admin host" (nuc-00) will have access to the Internet to pull down necessary bits, including this REPO. 
 Once the software has been acquired, the Internet link can be disconnected and the environment can be built absent of external connectivity.
 
 [Hardware Inventory and Description](./Hardware.md)
