@@ -34,11 +34,11 @@ While this repo is available via HTTP/S, I will make all the content available o
 [Harvester Community Images](https://github.com/harvester/harvester/releases)
 
 [Carbide Portal](https://portal.ranchercarbide.dev/product/)
-[Hauler - Product Page](https://ranchergovernment.com/products/hauler)
+[Hauler - Product Page](https://ranchergovernment.com/products/hauler)  
 [Hauler - Docs](https://docs.hauler.dev/docs/intro)
 
 ### Videos, Blogs, Walkthroughs, etc..
-[Harvester + Kasm - GPU Passthrough](https://www.youtube.com/watch?v=3tMfc0fUvk4)
-[Kasm Technologies and Rancher Government Solutions Partner to Deliver Enterprise-Class Kubernetes-Powered VDI](https://www3-develop.kasmweb.com/alliance-partnership/rancher-government-solutions)
+[Harvester + Kasm - GPU Passthrough](https://www.youtube.com/watch?v=3tMfc0fUvk4)  
+[Kasm Technologies and Rancher Government Solutions Partner to Deliver Enterprise-Class Kubernetes-Powered VDI](https://www3-develop.kasmweb.com/alliance-partnership/rancher-government-solutions)  
 
 [Three Easy-Mode Ways of Installing Rancher onto Harvester](https://ranchergovernment.com/blog/three-easy-mode-ways-of-installing-rancher-onto-harvester)
