@@ -26,10 +26,11 @@ Once the software has been acquired, the Internet link can be disconnected and t
 ![Kubernerdes Enclave Hardware](Images/KubernerdesEnclaveHardware.png)
 
 ## High-level steps
-- Build nuc-00 (physical node)
-- Build nuc-00-01/nuc-00-02 (virtual machines)
+- Build nuc-00 (physical node - "admin or infra host")
+- Build nuc-00-01/nuc-00-02 (virtual machines - "DNS and PXE hosts")
 - Build Harvester Cluster
-- Install Rancher Manager Server (RMS) on Harvester Cluster
+- Deploy 3 x Linux VMs to host Rancher Manager Server (RMS)
+- Install K3s/RKE2 on Linux VMs, then install Rancher Manager Server 
 - Deploy Kubernetes using RMS (Leap Micro + K3s)
 - Deploy Kubernetes using RMS (Leap + RKE2)
 
