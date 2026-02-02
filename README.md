@@ -38,6 +38,12 @@ While this repo is available via HTTP/S, I will make all the content available o
 
 ## Links
 
+### Guides
+[Harvester Intro and Setup - includes VM deployment](https://www.suse.com/c/rancher_blog/harvester-intro-and-setup/)   
+[Deploy Rancher Manager - Helm CLI Quick Start](https://ranchermanager.docs.rancher.com/getting-started/quick-start-guides/deploy-rancher-manager/helm-cli)  
+[Virtualization on Kubernetes with Harvester](https://ranchermanager.docs.rancher.com/integrations-in-rancher/harvester)  
+
+
 ### References
 [Harvester Community Images](https://github.com/harvester/harvester/releases)
 
@@ -45,7 +51,8 @@ While this repo is available via HTTP/S, I will make all the content available o
 [Hauler - Product Page](https://ranchergovernment.com/products/hauler)  
 [Hauler - Docs](https://docs.hauler.dev/docs/intro)
 
-### Videos, Blogs, Walkthroughs, etc..
+### Videos, Blogs, Walkthroughs, etc...
+
 [Harvester + Kasm - GPU Passthrough](https://www.youtube.com/watch?v=3tMfc0fUvk4)  
 [Kasm Technologies and Rancher Government Solutions Partner to Deliver Enterprise-Class Kubernetes-Powered VDI](https://www3-develop.kasmweb.com/alliance-partnership/rancher-government-solutions)  
 
