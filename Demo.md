@@ -45,17 +45,8 @@
 - hauler - tool for pulling down software assets for distribution in airgap
 
 # Links
+## Demo Hosts and UI
 [harvester UI](http://harvester.homelab.kubernerdes.com)  
 [Rancher UI](http://rancher.homelab.kubernerdes.com)  
-   
-[Harvester Community Images](https://github.com/harvester/harvester/releases)    
-
-[Hauler - Product Page](https://ranchergovernment.com/products/hauler)  
-[Hauler - Docs](https://docs.hauler.dev/docs/intro)
-[Carbide Portal](https://portal.ranchercarbide.dev/product/)
-
-## Videos, Walkthroughs, etc..
-[Harvester + Kasm - GPU Passthrough](https://www.youtube.com/watch?v=3tMfc0fUvk4)  
-[Kasm Technologies and Rancher Government Solutions Partner to Deliver Enterprise-Class Kubernetes-Powered VDI](https://www3-develop.kasmweb.com/alliance-partnership/rancher-government-solutions)
-
-[Three Easy-Mode Ways of Installing Rancher onto Harvester](https://ranchergovernment.com/blog/three-easy-mode-ways-of-installing-rancher-onto-harvester)
+ 
+for references and guidance links, see [README](./README.md) 
