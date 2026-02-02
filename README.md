@@ -18,7 +18,7 @@ A self-sustaining network enclave with a
 
 ## Environment Overview
 The "admin host" (nuc-00) will have access to the Internet to pull down necessary bits, including this REPO. 
-Once the software has been acquired, the Internet link can be disconnected and the environment can be built absent of external connectivity.
+Once the software has been acquired, the Internet link can be disconnected and the environment can be built, and managed, absent of external connectivity.
 
 [Hardware Inventory and Description](./Hardware.md)
 
