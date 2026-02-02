@@ -15,6 +15,7 @@ A self-sustaining network enclave with a
 * 3-node Harvester cluster 
 * Rancher Manager Server
 * Kubernetes cluster hosting Applications
+* [bonus]Integrate my NVIDIA AI hardware with RGS K8s/cloud-native stack
 
 ## Environment Overview
 The "admin host" (nuc-00) will have access to the Internet to pull down necessary bits, including this REPO. 
