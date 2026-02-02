@@ -4,6 +4,8 @@ This single repository contains the overview, architecture, and implementation s
 
 This is NOT an official repository.  It is meant to be a quick way to build a lab environment using the "easy methods" to get things working.
 
+Advice: things are changing frequently in the cloud-native space.  I have developed a habit to ensure I check for the most current sources.  (i.e. a video published in June of last year, was probably started around April/May - and is most likely a bit dated).
+
 ## Status
 Status: Work in Progress (Jan 2026)
 
