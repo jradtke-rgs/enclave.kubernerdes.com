@@ -37,6 +37,11 @@ NUC_00_02_FILES=(
   /etc/named.conf
 )
 
+NUC_00_03_FILES=(
+  /etc/haproxy/haproxy.cfg
+  /etc/keepalived/keepalived.conf
+  /etc/sysctl.d/20_keepalive.conf
+)
 # --- Functions ---
 
 backup_host() {
@@ -98,9 +103,10 @@ HOST_FILES_REF=(
   [nuc-00]="NUC_00_FILES"
   [nuc-00-01]="NUC_00_01_FILES"
   [nuc-00-02]="NUC_00_02_FILES"
+  [nuc-00-03]="NUC_00_03_FILES"
 )
 
-ALL_HOSTS=(nuc-00 nuc-00-01 nuc-00-02)
+ALL_HOSTS=(nuc-00 nuc-00-01 nuc-00-02 nuc-00-03)
 TARGETS=("${@:-${ALL_HOSTS[@]}}")
 # If no args provided, default to all hosts
 if [ "$#" -eq 0 ]; then
