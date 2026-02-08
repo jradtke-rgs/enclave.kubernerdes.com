@@ -1,23 +1,32 @@
 # README
 
-This single repository contains the overview, architecture, and implementation steps to deploy the components of the RGS stack on small form factor PC (Intel NUC).  A similar REPO will be created later demonstrating the same, but using RGS bits and endpoints.
+This single repository contains the overview, architecture, and implementation steps to deploy the components of the RGS stack using Carbide on small form factor PC (Intel NUC).  A similar REPO will be created later demonstrating the same, but using RGS bits and endpoints.
 
 This is NOT an official repository.  It is meant to be a quick way to build a lab environment using the "easy methods" to get things working.
 
 Advice: things are changing frequently in the cloud-native space.  I have developed a habit to ensure I check for the most current sources.  (i.e. a video published in June of last year, was probably started around April/May - and is most likely a bit dated).
 
 ## Status
-Status: Work in Progress (Jan 2026)
+Status: Work in Progress (Feb 2026)
 
 This is mostly a collection of scripts, notes, etc.. at this point.  It will change significantly to be more of a guide and reference.
 
-## Goal
-A self-sustaining network enclave with a
+## Goals
+
+A self-sustaining network enclave with:
 * Infrastructure node hosting DNS, PXE build
 * 3-node Harvester cluster 
 * Rancher Manager Server
 * Kubernetes cluster hosting Applications
-* [bonus] Integrate my NVIDIA AI hardware with RGS K8s/cloud-native stack
+* [bonus] Integrated NVIDIA AI hardware with RGS K8s/cloud-native stack
+
+## Prerequisites
+
+* request (and receive) Carbide License
+* 3 x NUCs that are configured identically (re: Storage/Network Interfaces)
+* 1 x system with Keyboard/Video/Mouse for administrating resources (I use another NUC)
+* Internet connectivity
+* [Hardware - Overview](./Hardware.md)
 
 ## Environment Overview
 The "admin host" (nuc-00) will have access to the Internet to pull down necessary bits, including this REPO. 
