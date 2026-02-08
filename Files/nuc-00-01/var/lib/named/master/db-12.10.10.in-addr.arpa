@@ -1,6 +1,6 @@
 $TTL 2D
 12.10.10.in-addr.arpa.   IN SOA dns.enclave.kubernerdes.com. root.enclave.kubernerdes.com. (
-                        2025121802	; serial
+                        2026020801	; serial
                         1D              ; refresh
                         2H              ; retry
                         1W              ; expiry
@@ -17,10 +17,10 @@ $TTL 2D
 10	IN	PTR	kubernerd.enclave.kubernerdes.com.
 12	IN	PTR	librenms.enclave.kubernerdes.com.
 
-; Load Balancer for Harvester Cluster(s) - one LB per Harvester Cluster
+; Load Balancer for Harvester Cluster(s) - one LB per K8s Cluster (sometimes paired)
 91	IN	PTR     harvester-edge-lb.enclave.kubernerdes.com.
 92	IN	PTR     harvester-dc-lb.enclave.kubernerdes.com.
-93	IN	PTR	hadrian.enclave.kubernerdes.com.
+93	IN	PTR	nuc-00-03.enclave.kubernerdes.com.
 
 ; Harvester Edge Cluster
 100	IN	PTR	harvester-edge.enclave.kubernerdes.com.

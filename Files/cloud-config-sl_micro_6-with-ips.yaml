@@ -33,7 +33,7 @@ runcmd:
     HOSTNAME=$(cat /etc/hostname 2>/dev/null || hostname)
     IPADDR=""
     GATEWAY="10.10.12.1"
-    DNS_DOMAIN="homelab.kubernerdes.com"
+    DNS_DOMAIN="enclave.kubernerdes.com"
 
     # Log for debugging
     LOG_FILE="/var/log/static-ip-setup.log"

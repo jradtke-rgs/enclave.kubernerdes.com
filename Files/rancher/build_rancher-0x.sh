@@ -95,11 +95,11 @@ helm install cert-manager jetstack/cert-manager \
 
 helm install rancher rancher-latest/rancher \
   --namespace cattle-system \
-  --set hostname=rancher.homelab.kubernerdes.com \
+  --set hostname=rancher.enclave.kubernerdes.com \
   --set replicas=1 \
-  --set bootstrapPassword=mypasswordis3l33t
+  --set bootstrapPassword=Passw0rd01
 
-echo https://rancher.homelab.kubernerdes.com/dashboard/?setup=$(kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}')
+echo https://rancher.enclave.kubernerdes.com/dashboard/?setup=$(kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}')
 BOOTSTRAP_PASSWORD=$(kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}{{ "\n" }}')
 
 exit 

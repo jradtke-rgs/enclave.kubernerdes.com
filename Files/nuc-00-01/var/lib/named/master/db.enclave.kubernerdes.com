@@ -1,7 +1,7 @@
 $TTL 604800 
 $ORIGIN enclave.kubernerdes.com. 
 @	IN SOA      kubernerd.kubernerdes.com.  root.kubernerdes.com. ( 
-            2025121901 ; Serial
+            2026020801 ; Serial
             604800     ; Refresh
             86400      ; Retry
             2419200    ; Expire
@@ -23,7 +23,7 @@ librenms	IN	A	10.10.12.12
 
 ; Load Balancer for Harvester Cluster(s) - one LB per Harvester Cluster
 ; These are the Host Address - define VIP elsewhere
-hadrian			IN	A	10.10.12.93
+nuc-00-03	IN	A	10.10.12.93
 
 ; Hardware Devices in the 1xx range
 ; NUC cluster (Harvester Edge)
@@ -37,7 +37,7 @@ nuc-02-kvm	IN	A	10.10.12.112
 nuc-03-kvm	IN	A	10.10.12.113
 
 ; Hadrian VIP
-hadrian-vip	IN	A	10.10.12.193
+nuc-00-03-vip	IN	A	10.10.12.193
 
 ; Rancher Cluster
 rancher		IN	A	10.10.12.210
