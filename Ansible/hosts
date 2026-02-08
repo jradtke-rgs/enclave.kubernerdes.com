@@ -4,6 +4,7 @@ ansible_become=true
 debug_level=2
 
 [HarvesterEdge]
+ansible_python_interpreter=/usr/bin/python3
 nuc-01
 nuc-02
 nuc-03
