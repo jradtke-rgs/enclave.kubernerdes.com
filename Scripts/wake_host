@@ -9,9 +9,9 @@ import sys
 
 # Hostname to MAC address lookup table
 HOSTS = {
-    "nuc-01": "aa:bb:cc:dd:ee:01",
-    "nuc-02": "aa:bb:cc:dd:ee:02",
-    "nuc-03": "aa:bb:cc:dd:ee:03",
+    "nuc-01": "48:21:0b:65:ce:e5",
+    "nuc-02": "48:21:0b:65:c2:c7",
+    "nuc-03": "48:21:0b:5d:7a:e6",
     # Add more hosts as needed
 }
 
