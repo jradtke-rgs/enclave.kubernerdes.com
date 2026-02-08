@@ -32,7 +32,7 @@ runcmd:
     # Use multiple methods to reliably get hostname
     HOSTNAME=$(cat /etc/hostname 2>/dev/null || hostname)
     IPADDR=""
-    GATEWAY="10.0.0.1"
+    GATEWAY="10.10.12.1"
     DNS_DOMAIN="homelab.kubernerdes.com"
 
     # Log for debugging
@@ -43,14 +43,14 @@ runcmd:
 
     # Determine IP address based on hostname
     case "$HOSTNAME" in
-      harvester-edge-lb) IPADDR="10.0.0.91/22" ;;
-      harvester-dc-lb) IPADDR="10.0.0.92/22" ;;
-      rancher-01) IPADDR="10.0.0.211/22" ;;
-      rancher-02) IPADDR="10.0.0.212/22" ;;
-      rancher-03) IPADDR="10.0.0.213/22" ;;
-      observability-01) IPADDR="10.0.0.221/22" ;;
-      observability-02) IPADDR="10.0.0.222/22" ;;
-      observability-03) IPADDR="10.0.0.223/22" ;;
+      harvester-edge-lb) IPADDR="10.10.12.91/22" ;;
+      harvester-dc-lb) IPADDR="10.10.12.92/22" ;;
+      rancher-01) IPADDR="10.10.12.211/22" ;;
+      rancher-02) IPADDR="10.10.12.212/22" ;;
+      rancher-03) IPADDR="10.10.12.213/22" ;;
+      observability-01) IPADDR="10.10.12.221/22" ;;
+      observability-02) IPADDR="10.10.12.222/22" ;;
+      observability-03) IPADDR="10.10.12.223/22" ;;
       *)
         echo "Unknown hostname: $HOSTNAME - skipping static IP configuration" | tee -a $LOG_FILE
         exit 0
@@ -105,7 +105,7 @@ runcmd:
       ipv4.method manual \
       ipv4.addresses "$IP_ONLY/$PREFIX" \
       ipv4.gateway "$GATEWAY" \
-      ipv4.dns "10.0.0.8 10.0.0.9 8.8.8.8" \
+      ipv4.dns "10.10.12.8 10.10.12.9 8.8.8.8" \
       ipv4.dns-search "$DNS_DOMAIN" \
       connection.autoconnect yes
 

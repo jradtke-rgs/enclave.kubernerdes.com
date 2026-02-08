@@ -29,8 +29,8 @@ runcmd:
   # Update DNS search domain to kubernerdes.lab in network configuration
   - sed -i 's/^NETCONFIG_DNS_STATIC_SEARCHLIST=.*/NETCONFIG_DNS_STATIC_SEARCHLIST="kubernerdes.lab"/' /etc/sysconfig/network/config
 
-  # Configure static DNS servers (local DNS servers 10.0.0.8, 10.0.0.9, and fallback to Google DNS 8.8.8.8)
-  - sed -i 's/^NETCONFIG_DNS_STATIC_SERVERS=.*/NETCONFIG_DNS_STATIC_SERVERS="10.0.0.8 10.0.0.9 8.8.8.8"/' /etc/sysconfig/network/config
+  # Configure static DNS servers (local DNS servers 10.10.12.8, 10.10.12.9, and fallback to Google DNS 8.8.8.8)
+  - sed -i 's/^NETCONFIG_DNS_STATIC_SERVERS=.*/NETCONFIG_DNS_STATIC_SERVERS="10.10.12.8 10.10.12.9 8.8.8.8"/' /etc/sysconfig/network/config
 
   # Apply network configuration changes
   - netconfig update -f
@@ -40,19 +40,19 @@ runcmd:
     #!/bin/bash
     HOSTNAME=$(hostname)
     IPADDR=""
-    GATEWAY="10.0.0.1"
+    GATEWAY="10.10.12.1"
 
     # Determine IP address based on hostname
     case "$HOSTNAME" in
-      librenms)  IPADDR="10.0.0.12/22" ;;
-      harvester-edge-lb) IPADDR="10.0.0.91/22" ;;
-      harvester-dc-lb) IPADDR="10.0.0.92/22" ;;
-      rancher-01) IPADDR="10.0.0.211/22" ;;
-      rancher-02) IPADDR="10.0.0.212/22" ;;
-      rancher-03) IPADDR="10.0.0.213/22" ;;
-      observability-01) IPADDR="10.0.0.221/22" ;;
-      observability-02) IPADDR="10.0.0.222/22" ;;
-      observability-03) IPADDR="10.0.0.223/22" ;;
+      librenms)  IPADDR="10.10.12.12/22" ;;
+      harvester-edge-lb) IPADDR="10.10.12.91/22" ;;
+      harvester-dc-lb) IPADDR="10.10.12.92/22" ;;
+      rancher-01) IPADDR="10.10.12.211/22" ;;
+      rancher-02) IPADDR="10.10.12.212/22" ;;
+      rancher-03) IPADDR="10.10.12.213/22" ;;
+      observability-01) IPADDR="10.10.12.221/22" ;;
+      observability-02) IPADDR="10.10.12.222/22" ;;
+      observability-03) IPADDR="10.10.12.223/22" ;;
       *)
         echo "Unknown hostname: $HOSTNAME - skipping static IP configuration"
         exit 0
