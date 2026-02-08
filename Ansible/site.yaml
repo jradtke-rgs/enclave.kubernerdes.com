@@ -1,0 +1,5 @@
+---
+- hosts: all
+  roles:
+  - common
+  - update_os
