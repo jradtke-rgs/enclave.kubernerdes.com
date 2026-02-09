@@ -30,7 +30,7 @@ An inventory of "what goes in the case"
 
 ## Switch Layout
 
-Identifying network port connections (to determine what capacity I need)
+Network port connection layout (unmanaged switch)
 
 | Port | Host     | Purpose | Port | Host       | Purpose |
 |:--:|:-----------|:--------|:----:|:-----------|:----|
