@@ -1,13 +1,13 @@
 # README
 
-This single repository contains the overview, architecture, and implementation steps to deploy the components of the RGS stack using Carbide on small form factor PC (Intel NUC).  A similar REPO will be created later demonstrating the same, but using RGS bits and endpoints.
+This single repository contains the overview, architecture, and implementation steps to deploy the components of the RGS stack using Carbide on small form factor PC (Intel NUC).  
 
 This is NOT an official repository.  It is meant to be a quick way to build a lab environment using the "easy methods" to get things working.
 
 Advice: things are changing frequently in the cloud-native space.  I have developed a habit to ensure I check for the most current sources.  (i.e. a video published in June of last year, was probably started around April/May - and is most likely a bit dated).
 
 ## Status
-Status: Work in Progress (Feb 2026)
+Status: Work in Progress (Feb 2026) - currently shifting focus in this repo from community bits to RGS Carbide bits.
 
 This is mostly a collection of scripts, notes, etc.. at this point.  It will change significantly to be more of a guide and reference.
 
