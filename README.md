@@ -22,7 +22,7 @@ A self-sustaining network enclave with:
 
 ## Prerequisites
 
-* request (and receive) Carbide License
+* Gain access to Carbide Portal - by requesting Carbide License
 * 3 x NUCs that are configured identically (re: Storage/Network Interfaces)
 * 1 x system with Keyboard/Video/Mouse for administrating resources (I use another NUC)
 * Internet connectivity
