@@ -59,7 +59,7 @@ While this repo is available via HTTP/S, I will make all the content available o
 ### References
 [Harvester Community Images](https://github.com/harvester/harvester/releases)
 
-[Carbide Portal](https://portal.ranchercarbide.dev/product/)
+[Carbide Portal](https://portal.ranchercarbide.dev/product/)  
 [Hauler - Product Page](https://ranchergovernment.com/products/hauler)  
 [Hauler - Docs](https://docs.hauler.dev/docs/intro)
 
