@@ -25,6 +25,7 @@ This is "what goes in the case"
 | 1 | mouse |
 | 1 | keyboard |
 | 1 | [Beryl AX (GL-MT3000) Travel Router](https://store-us.gl-inet.com/collections/travel-routers/products/beryl-ax-gl-mt3000-pocket-sized-wi-fi-6-wireless-travel-gigabit-router) |
+| 11 | 28 AWG Cat6 Network Cables |
 
 
 ## Switch Layout
@@ -34,7 +35,7 @@ Identifying network port connections (to determine what capacity I need)
 | Port | Host     | Purpose | Port | Host       | Purpose |
 |:--:|:-----------|:--------|:----:|:-----------|:----|
 | 1  | nuc-00     |         | 9    | nuc-02-kvm | |
-| 2  | nuc-01     |         | 10   | nuc-02-kvm | | 
+| 2  | nuc-01     |         | 10   | nuc-03-kvm | | 
 | 3  | nuc-02     |         | 11   |            | |
 | 4  | nuc-03     |         | 12   |            | |
 | 5  | nuc-01-vms |         | 13   |            | |
