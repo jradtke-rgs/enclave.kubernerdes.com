@@ -4,14 +4,14 @@
 
 | System     | Purpose           | Model       | CPU | CPU model | Mem | Disk0 (SSD) | Disk1 NVMe |
 |:-----------|:------------------|:------------|:----|:----------|:----|:------|:------|
-| nuc-00     | Admin Host        | NUC13ANHi7  | 16  | i7-1360P  | 64  | 1024  | 1024  |
+| nuc-00     | Admin Host        | NUC13ANHi3  | 8   | i3-1315U  | 64  | 1024  | 1024  |
 | nuc-01     | Harvester         | NUC13ANHi7  | 16  | i7-1360P  | 64  | 1024  | 1024  |
 | nuc-02     | Harvester         | NUC13ANHi7  | 16  | i7-1360P  | 64  | 1024  | 1024  |
 | nuc-03     | Harvester         | NUC13ANHi7  | 16  | i7-1360P  | 64  | 1024  | 1024  |
 
 ## Bill of Materials (BOM)
 
-This is "what goes in the case" 
+An inventory of "what goes in the case" 
 
 | Qty | Object | 
 |:---:|:-------|
@@ -26,7 +26,6 @@ This is "what goes in the case"
 | 1 | keyboard |
 | 1 | [Beryl AX (GL-MT3000) Travel Router](https://store-us.gl-inet.com/collections/travel-routers/products/beryl-ax-gl-mt3000-pocket-sized-wi-fi-6-wireless-travel-gigabit-router) |
 | 11 | 28 AWG Cat6 Network Cables |
-
 
 ## Switch Layout
 
