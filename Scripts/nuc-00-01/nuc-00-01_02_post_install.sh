@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Atlas is the primary "infrastructure node" - it will run: bind, dhcp, tftp, http
+# nuc-00-01 is another "infrastructure node" - it will run: bind, dhcp, tftp, http
 
 # build box with minimal with SSH port open
 
@@ -10,6 +10,17 @@ echo 'mansible  ALL=(ALL) NOPASSWD: ALL' | tee /etc/sudoers.d/mansible-nopasswd-
 
 # Install DHCP/DNS using the following pattern:
 zypper --non-interactive in -t pattern dhcp_dns_server
+
+# Install tftp
+zypper --non-interactive in tftp
+# Download to specific location
+wget -O /srv/tftpboot/ipxe.efi https://boot.netboot.xyz/ipxe/netboot.xyz.efi
+
+# THESE NO LONGER WORK
+# wget -O /srv/tftpboot/ipxe.efi https://boot.ipxe.org/ipxe.efi
+# wget -O /srv/tftpboot/ipxe.efi https://boot.ipxe.org/ipxe.efi-x86_64
+# wget -O /srv/tftpboot/ipxe.efi https://github.com/ipxe/ipxe/releases/latest/download/ipxe.efi
+
 
 #### #### ####
 ## Setup BIND 
