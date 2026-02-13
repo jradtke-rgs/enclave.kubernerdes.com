@@ -11,16 +11,21 @@ echo 'mansible  ALL=(ALL) NOPASSWD: ALL' | tee /etc/sudoers.d/mansible-nopasswd-
 # Install DHCP/DNS using the following pattern:
 zypper --non-interactive in -t pattern dhcp_dns_server
 
-# Install tftp
-zypper --non-interactive in tftp
-# Download to specific location
-wget -O /srv/tftpboot/ipxe.efi https://boot.netboot.xyz/ipxe/netboot.xyz.efi
+# TODO: figure out where to download a good/valid version of ipxe.efi
+# Install TFTP and ipxe.efi
+case $(uname -n) in
+  nuc-00-01)
+    # Install tftp
+    zypper --non-interactive in tftp
+    # Download to specific location
+    wget -O /srv/tftpboot/ipxe.efi https://boot.netboot.xyz/ipxe/netboot.xyz.efi
+  ;;
+esac
 
 # THESE NO LONGER WORK
 # wget -O /srv/tftpboot/ipxe.efi https://boot.ipxe.org/ipxe.efi
 # wget -O /srv/tftpboot/ipxe.efi https://boot.ipxe.org/ipxe.efi-x86_64
 # wget -O /srv/tftpboot/ipxe.efi https://github.com/ipxe/ipxe/releases/latest/download/ipxe.efi
-
 
 #### #### ####
 ## Setup BIND 
