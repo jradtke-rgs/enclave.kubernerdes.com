@@ -39,6 +39,8 @@ Once the software has been acquired, the Internet link can be disconnected and t
 ## High-level steps
 - Build nuc-00 (physical node - "admin or infra host")
 - Build nuc-00-01/nuc-00-02 (virtual machines - "DNS and PXE hosts")
+- install and setup Hauler
+ - pull down Harvester, Rancher, and related bits
 - Build Harvester Cluster
 - Deploy 3 x Linux VMs to host Rancher Manager Server (RMS)
 - Install K3s/RKE2 on Linux VMs, then install Rancher Manager Server 
