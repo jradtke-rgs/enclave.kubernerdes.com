@@ -5,6 +5,7 @@ set -euo pipefail
 #  Status:  working
 #   Notes:  Manages Ollama, vLLM, or LMStudio (one engine at a time) plus OpenWebUI.
 #           Replaces the former start_openwebui.sh script.
+# wget -O ~/bin/llm-manager.sh https://raw.githubusercontent.com/jradtke-rgs/enclave.kubernerdes.com/refs/heads/main/Scripts/spark-e/llm-manager.sh
 
 ###############################################################################
 # Constants & paths
