@@ -17,6 +17,7 @@ DEFAULT_SSH_USER="root"
 # directories with trailing slash (e.g. /path/dir/) for recursive copy.
 NUC_00_FILES=(
   /etc/apache2/httpd.conf
+  /srv/tftpboot/ipxe.efi
   /srv/www/htdocs/index.*
   /srv/www/htdocs/kubernerdes.php
   /srv/www/htdocs/harvester/harvester-edge/

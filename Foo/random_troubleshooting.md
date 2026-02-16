@@ -77,10 +77,13 @@ openssl s_client \
   | tr '[:upper:]' '[:lower:]'
 ```
 
+### 
+Differentiate between using IP and the hostname
 ```
 echo | openssl s_client -connect 10.10.12.100:443 > /tmp/ssl_output.0
 echo | openssl s_client -connect 10.10.12.100:443 -servername harvester-edge.enclave.kubernerdes.com > /tmp/ssl_output.1
 sdiff /tmp/ssl_output.0 /tmp/ssl_output.1
+echo | openssl s_client -connect 10.10.12.100:443 -showcerts > /tmp/ssl_output.0
 ```
 ## Cluster Delete
 
