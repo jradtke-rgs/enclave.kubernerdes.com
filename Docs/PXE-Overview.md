@@ -17,6 +17,9 @@ There are 3 nodes in this simple explanation:
 
 ![PXE-Overview](../Images/PXE-Overview.png)
 
-NOTE:  In this image (above) I provide a path to the ipxe-menu which is not entirely congruent with the actual location in the config files.  This was primarily just to save space in the visualization.  
- 
-/srv/www/htdocs/ipxe.efi => /srv/www/htdocs/harvester/harvester-edge/ipxe.efi
+NOTE:  I provide a path to the ipxe-menu (in the image above) which is not entirely congruent with the actual location in the config files.  This was primarily just to save space in the visualization.  
+
+| Image Reference | Actual Path/Location |
+|:----------------|:---------------------|
+| /srv/www/htdocs/ipxe.efi | /srv/www/htdocs/harvester/harvester-edge/ipxe.efi |
+| http://10.10.12.10/ipxe.efi | http://10.10.12.10/harvester/harvester-edge/ipxe.efi | 
