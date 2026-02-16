@@ -15,5 +15,5 @@ There are 3 nodes in this simple explanation:
 * tftp/dhcp server (10.10.12.8 - the server which provides PXE services consisting of the DHCP, then TFTP)
 
 
-![PXE-Overview](../Images/PXE-Overview.pngr)
+![PXE-Overview](../Images/PXE-Overview.png)
 
