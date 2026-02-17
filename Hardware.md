@@ -43,5 +43,5 @@ Network port connection layout (unmanaged switch)
 | 4  | nuc-03     |         | 12   |            | |
 | 5  | nuc-01-vms |         | 13   |            | |
 | 6  | nuc-02-vms |         | 14   |            | |
-| 7  | nuc-03-vms |         | 15   |            | |
+| 7  | nuc-03-vms |         | 15   | spark-e    | |
 | 8  | nuc-01-kvm |         | 16   | uplink     | | 
