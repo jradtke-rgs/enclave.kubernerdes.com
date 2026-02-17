@@ -15,7 +15,8 @@ An inventory of "what goes in the case"
 
 | Qty | Object | 
 |:---:|:-------|
-| 4   | [Intel NUC NUC13ANHi7](https://download.intel.com/newsroom/2023/client-computing/Intel-NUC-13-Pro-Product-Brief.pdf) |
+| 1   | [Intel NUC NUC13ANHi3](https://download.intel.com/newsroom/2023/client-computing/Intel-NUC-13-Pro-Product-Brief.pdf) |
+| 3   | [Intel NUC NUC13ANHi7](https://download.intel.com/newsroom/2023/client-computing/Intel-NUC-13-Pro-Product-Brief.pdf) |
 | 4   | Chicony A17-120P2A 20V 6A 120W Power Supply (5.5mm - 2.5mm) |
 | 3   | [sipeed nanoKVM + HDMI cable + USB-C Cable](https://wiki.sipeed.com/hardware/en/kvm/NanoKVM/introduction.html) |
 | 3   | 1GB USB-C Network Adapter |
