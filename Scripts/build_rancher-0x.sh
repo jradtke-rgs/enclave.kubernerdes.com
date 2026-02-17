@@ -3,9 +3,7 @@
 # Reference: https://ranchermanager.docs.rancher.com/how-to-guides/new-user-guides/kubernetes-cluster-setup/k3s-for-rancher
 
 # Create 2 x VM with (4 vCPU, 16GB, 50GB HDD)
-# Install SLE 15 text mode
-# Enable Base + Containers Modules
-# Add mansible user
+# Install SL-micro 6.x
 # open SSH port
 
 # ssh-key for rancher should exist (if you deployed VM on Harvester)
@@ -25,8 +23,10 @@ cat << EOF | tee -a  /etc/hosts
 EOF
 
 # Set some variables
-export MY_K3S_VERSION=v1.32.6+k3s1
-export MY_K3S_INSTALL_CHANNEL=v1.32
+#export MY_K3S_VERSION=v1.32.6+k3s1
+#export MY_K3S_INSTALL_CHANNEL=v1.32
+export MY_K3S_VERSION=v1.34.4+k3s1
+export MY_K3S_INSTALL_CHANNEL=v1.34
 export MY_K3S_TOKEN=Waggoner
 export MY_K3S_ENDPOINT=10.10.12.210
 export MY_K3S_HOSTNAME=rancher.enclave.kubernerdes.com
@@ -47,14 +47,6 @@ case $(uname -n) in
   ;;
 esac
 
-# Make a copy of the KUBECONFIG for non-root use
-# TODO:  I need to 1/ decide if this script should run as root (probably: yes), figure out what user to store the kubeconfig with (probably: sles)
-mkdir ~/.kube; sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config; sudo chown $(whoami) ~/.kube/config
-mkdir ~sles/.kube; sudo cp /etc/rancher/k3s/k3s.yaml ~sles/.kube/config; sudo chown -R sles ~sles/.kube/config
-export KUBECONFIG=~/.kube/config
-openssl s_client -connect 127.0.0.1:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.0
-grep DNS cert.0
-
 # Replace localhost IP with the HAproxy endpoint
 sed -i -e "s/127.0.0.1/${MY_K3S_ENDPOINT}/g" $KUBECONFIG
 openssl s_client -connect 127.0.0.1:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.1
@@ -66,6 +58,19 @@ case $VARIANT in
     shutdown now -r
   ;;
 esac
+
+# This needs to be done after the restart (apparently)
+# Make a copy of the KUBECONFIG for non-root use
+# TODO:  I need to 1/ decide if this script should run as root (probably: yes), figure out what user to store the kubeconfig with (probably: sles)
+mkdir ~/.kube; sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config; sudo chown $(whoami) ~/.kube/config
+mkdir ~sles/.kube; sudo cp /etc/rancher/k3s/k3s.yaml ~sles/.kube/config; sudo chown -R sles ~sles/.kube/config
+export KUBECONFIG=~/.kube/config
+openssl s_client -connect 127.0.0.1:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.0
+grep DNS cert.0
+
+# Replace localhost IP with the HAproxy endpoint
+sed -i -e "s/127.0.0.1/${MY_K3S_ENDPOINT}/g" $KUBECONFIG
+openssl s_client -connect 127.0.0.1:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.1
 
 ## RANCHER FOooo
 # Run this from kubernerd
