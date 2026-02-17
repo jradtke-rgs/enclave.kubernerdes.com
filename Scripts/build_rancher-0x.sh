@@ -67,14 +67,18 @@ mkdir ~sles/.kube; sudo cp /etc/rancher/k3s/k3s.yaml ~sles/.kube/config; sudo ch
 export KUBECONFIG=~/.kube/config
 openssl s_client -connect 127.0.0.1:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.0
 grep DNS cert.0
+kubectl get nodes
 
 # Replace localhost IP with the HAproxy endpoint
+. ./env.vars
 sed -i -e "s/127.0.0.1/${MY_K3S_ENDPOINT}/g" $KUBECONFIG
 openssl s_client -connect 127.0.0.1:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.1
+kubectl get nodes
 
 ## RANCHER FOooo
 # Run this from kubernerd
 helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
+helm repo update
 
 kubectl create namespace cattle-system
 
