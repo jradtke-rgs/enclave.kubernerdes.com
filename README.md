@@ -38,7 +38,7 @@ Once the software has been acquired, the Internet link can be disconnected and t
 
 [Hardware Inventory and Description](./Hardware.md)
 
-![Kubernerdes Enclave Hardware](Images/KubernerdesEnclaveHardware.png)
+![Kubernerdes Enclave Hardware](Images/KubernerdesEnclaveHardware-with_NVIDIA.png)
 
 ## High-level steps
 
