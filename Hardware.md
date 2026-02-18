@@ -25,7 +25,7 @@ An inventory of "what goes in the case"
 | 1   | [portable monitor Viewsonic VA1655](https://www.viewsonic.com/ph/products/lcd/VA1655) | 
 | 1   | power strip |
 | 1   | mouse |
-| 1   | keyboard |
+| 1   | [Satechi Slim W1 Wired](https://www.bhphotovideo.com/c/product/1629629-REG/satechi_st_ucsw1m_slim_w1_wired_backlit.html) |
 | 11  | 28 AWG Cat6 Network Cables |
 | 1   | [Beryl AX (GL-MT3000) Travel Router](https://store-us.gl-inet.com/collections/travel-routers/products/beryl-ax-gl-mt3000-pocket-sized-wi-fi-6-wireless-travel-gigabit-router) |
 | 1   | [Ubiquit - USW-PRO-MAX-16](https://store.ui.com/us/en/category/switching-professional-max-xg/products/usw-pro-max-16) | 
