@@ -4,7 +4,7 @@ This single repository contains the overview, architecture, and implementation s
 
 This is NOT an official repository.  It is meant to be a quick way to build a lab environment using the "easy methods" to get things working.
 
-Eventually this repo will be the technical steps and there will be an associated "docs" repo that provides the guidance and details of the tasks and steps provided here. [Documentation](https://github.com/jradtke-rgs/docs-enclave.kubernerdes.com/)
+Eventually this repo will be the technical steps and there will be an associated "docs" repo that provides the guidance and details of the tasks and steps provided here. [Documentation](https://github.com/jradtke-rgs/docs.enclave.kubernerdes.com/)
 
 
 Advice/Tips: 
