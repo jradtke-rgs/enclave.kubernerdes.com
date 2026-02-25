@@ -1,6 +1,6 @@
 # README
 
-This single repository contains the overview, architecture, and implementation steps to deploy the components of the RGS stack using Carbide on small form factor PC (Intel NUC).  Here we mostly h ave a collection of scripts, notes, etc.. at this point.  It will change significantly to be more of a guide and reference.
+This single repository contains the overview, architecture, and implementation steps to deploy the components of the RGS stack using Carbide on small form factor PC (Intel NUC).  In this repo we mostly have a collection of scripts, notes, etc.. at this point.  It will change significantly to be more of a guide and reference.
 
 This is NOT an official repository.  It is meant to be a quick way to build a lab environment using the "easy methods" to get things working.
 
@@ -27,7 +27,7 @@ Eventually this repo will be the technical steps and there will be an associated
 ## Prerequisites
 
 * Gain access to Carbide Portal - by requesting Carbide License
-* 3 x NUCs that are configured identically (re: Storage/Network Interfaces)
+* 3 x NUCs (or similar hardware) that are configured identically (re: Storage/Network Interfaces)
 * 1 x system with Keyboard/Video/Mouse for administrating resources (I use another NUC)
 * Internet connectivity
 * [Hardware - Overview](./Hardware.md)
@@ -50,8 +50,8 @@ Once the software has been acquired, the Internet link can be disconnected and t
 - Build Harvester Cluster (USB or PXE)
 - Deploy 3 x Linux VMs to host Rancher Manager Server (RMS)
 - Install K3s/RKE2 on Linux VMs, then install Rancher Manager Server 
-- Deploy Kubernetes using RMS (Leap Micro + K3s)
-- Deploy Kubernetes using RMS (Leap + RKE2)
+- Deploy Kubernetes using RMS (RGS SL-Micro + K3s)
+- Deploy Kubernetes using RMS (RGS SL-Micro + RKE2)
 
 ## TODO
 
@@ -61,16 +61,17 @@ While this repo is available via HTTP/S, I will make all the content available o
 
 ### Guides
 
-[Harvester Intro and Setup - includes VM deployment](https://www.suse.com/c/rancher_blog/harvester-intro-and-setup/)   
-[Deploy Rancher Manager - Helm CLI Quick Start](https://ranchermanager.docs.rancher.com/getting-started/quick-start-guides/deploy-rancher-manager/helm-cli)  
-[Virtualization on Kubernetes with Harvester](https://ranchermanager.docs.rancher.com/integrations-in-rancher/harvester)  
-### References
-
-[Harvester Community Images](https://github.com/harvester/harvester/releases)
-
 [Carbide Portal](https://portal.ranchercarbide.dev/product/)  
 [Hauler - Product Page](https://ranchergovernment.com/products/hauler)  
 [Hauler - Docs](https://docs.hauler.dev/docs/intro)
+
+[Deploy Rancher Manager - Helm CLI Quick Start](https://ranchermanager.docs.rancher.com/getting-started/quick-start-guides/deploy-rancher-manager/helm-cli)  
+[Virtualization on Kubernetes with Harvester](https://ranchermanager.docs.rancher.com/integrations-in-rancher/harvester)  
+
+### References
+
+[Harvester Community Images](https://github.com/harvester/harvester/releases)
+[Harvester Intro and Setup - includes VM deployment](https://www.suse.com/c/rancher_blog/harvester-intro-and-setup/)   
 
 ### Videos, Blogs, Walkthroughs, etc...
 
