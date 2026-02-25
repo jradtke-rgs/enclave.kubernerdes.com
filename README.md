@@ -16,12 +16,13 @@ Eventually this repo will be the technical steps and there will be an associated
 
 ## Goals
 
-A self-sustaining network enclave with:
-* Infrastructure node hosting DNS, PXE build
-* 3-node Harvester cluster 
-* Rancher Manager Server
-* Kubernetes cluster hosting Applications
-* [bonus] Integrated NVIDIA AI hardware with RGS K8s/cloud-native stack
+* A fundamental understanding of deploying RGS Carbide bits 
+* A self-sustaining network enclave with:
+  * Infrastructure node hosting DNS, PXE build
+  * 3-node Harvester cluster 
+  * Rancher Manager Server
+  * Kubernetes cluster for hosting Applications
+  * [bonus] Integrated NVIDIA AI hardware with RGS K8s/cloud-native stack
 
 ## Prerequisites
 
