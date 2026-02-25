@@ -7,7 +7,7 @@ This is NOT an official repository.  It is meant to be a quick way to build a la
 **Advice/Tips**:
 
 * things are changing frequently in the cloud-native space.  I have developed a habit to ensure I check for the most current sources.  (i.e. a video published in June of 2025, was probably started around April/May - and is most likely a bit dated).
-* If you happened to find this repo and do not (yet) have a Carbide subscription, I have good news - you can do almost ALL of this using community bits (you just loose some functionality in terms of heightened inspection, security, etc.. of the bits.  The AppCo (Carbide container registry) also will not be available.
+* If you happened to find this repo and do not (yet) have a Carbide subscription, I have good news - you can do almost ALL of this using community bits (you just loose some functionality in terms of heightened inspection, security, etc.. of the bits.  The Rancher Governrment Carbide Applications portal also will not be available.
 
 ## Status
 **Status**: Work in Progress (Feb 2026) - currently shifting focus in this repo from community bits to RGS Carbide bits.
