@@ -6,9 +6,16 @@ sudo su -
 
 # Install AWS client and other dependencies
 
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-sudo ./aws/install
+
+if command -v aws &>/dev/null; then
+  echo "AWS CLI is already installed: $(aws --version)"
+else
+  echo "AWS CLI not found — installing..."
+  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+  unzip awscliv2.zip
+  sudo ./aws/install
+  rm -rf awscliv2.zip aws
+fi
 sudo zypper install python3-boto3
 
 # Install certbot and required dependencies
@@ -21,10 +28,8 @@ pip3 install certbot-dns-route53
 # Create the HAProxy certs directory
 sudo mkdir -p /etc/haproxy/certs
 
-# Create combined PEM for jarvis
-sudo cat /etc/letsencrypt/live/jarvis.enclave.kubernerdes.com/fullchain.pem \
-        /etc/letsencrypt/live/jarvis.enclave.kubernerdes.com/privkey.pem \
-        > /etc/haproxy/certs/jarvis.enclave.kubernerdes.com.pem
+# TODO:  ummm... where are the actual steps to request the cert.
+
 
 # Create combined PEM for spark-e
 sudo cat /etc/letsencrypt/live/spark-e.enclave.kubernerdes.com/fullchain.pem \
@@ -41,6 +46,10 @@ sudo chown haproxy:haproxy /etc/haproxy/certs/*.pem  # Adjust user if different
 
 exit 0
 
+# #####################
+# AppArmor Update for Cert repo (manual steps at this point)
+#  TODO: make this scripted as it will be universally applied
+# #####################
 
 # Fix/update AppArmor (to allow my certificate file directory location)
   1. Check what HAProxy is actually failing on:

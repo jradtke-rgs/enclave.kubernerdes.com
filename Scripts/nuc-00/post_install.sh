@@ -228,6 +228,43 @@ sudo virt-install \
   --extra-args="console=ttyS0 textmode=1 inst.auto=http://10.10.12.10/enclave.kubernerdes.com/Files/${VM_HOSTNAME}-autoinst.xml ifcfg=eth0=10.10.12.8/22,10.10.12.1,8.8.8.8 hostname=${VM_HOSTNAME}.enclave.kubernerdes.com"
 
 
+# **********************************
+# Install Hauler and sync content 
+# **********************************
+# install latest release
+curl -sfL https://get.hauler.dev | sudo bash
+curl -sfOL https://raw.githubusercontent.com/rancherfederal/carbide-releases/main/carbide-key.pub
+
+echo "NOTE: you will need to update ~/.bashrc.d/HAULER"
+[ ! -d ~/.bashrc.d ] && mkdir ~/.bashrc.d
+cat << EOF | tee ~/.bashrc.d/HAULER
+HAULER_USER=""
+HAULER_PASSWORD=""
+HAULER_SOURCE_REPO_URL="rgcrprod.azurecr.us"
+alias HAULER_LOGIN="$(which hauler) login \$HAULER_SOURCE_REPO_URL -u \$HAULER_USER -p \$HAULER_PASSWORD"
+EOF
+hauler completion bash >> ~/.bashrc.d/HAULER
+. ~/.bashrc.d/HAULER
+
+cat <<EOF > carbide-images.yaml
+apiVersion: content.hauler.cattle.io/v1
+kind: Images
+metadata:
+  name: carbide-images
+spec:
+  images:
+$(curl -sfL https://raw.githubusercontent.com/rancherfederal/carbide-releases/main/carbide-images.txt | sed '/nats/d' | sed 's/^/    - name: /')
+---
+apiVersion: content.hauler.cattle.io/v1
+kind: Images
+metadata:
+  name: carbide-dependency-images
+spec:
+  images:
+$(curl -sfL https://raw.githubusercontent.com/rancherfederal/carbide-releases/main/carbide-images.txt | sed '/rgcr/d' | sed 's/^/    - name: /')
+EOF
+
+
 exit 0
 vm_cleanup() {
 sudo virsh destroy ${VM_HOSTNAME}

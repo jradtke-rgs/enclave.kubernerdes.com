@@ -1,6 +1,6 @@
 $TTL 2D
 12.10.10.in-addr.arpa.   IN SOA dns.enclave.kubernerdes.com. root.enclave.kubernerdes.com. (
-                        2026020801	; serial
+                        2026030301	; serial
                         1D              ; refresh
                         2H              ; retry
                         1W              ; expiry
@@ -41,12 +41,13 @@ $TTL 2D
 221	IN	PTR	observability-01.enclave.kubernerdes.com.
 222	IN	PTR	observability-02.enclave.kubernerdes.com.
 223	IN	PTR	observability-03.enclave.kubernerdes.com.
-; RKE2 on Harvester Cluster 01
-230	IN	PTR	rke2-harv-dc-01.enclave.kubernerdes.com.
-231	IN	PTR	rke2-harv-dc-01-node-01.enclave.kubernerdes.com.
-232	IN	PTR	rke2-harv-dc-01-node-02.enclave.kubernerdes.com.
-233	IN	PTR	rke2-harv-dc-01-node-03.enclave.kubernerdes.com.
+; Enclave Apps Cluster
+230	IN	PTR	enclaveapps.enclave.kubernerdes.com.
+231	IN	PTR	enclaveapps-01.enclave.kubernerdes.com.
+232	IN	PTR	enclaveapps-02.enclave.kubernerdes.com.
+233	IN	PTR	enclaveapps-03.enclave.kubernerdes.com.
 
+; Rando Hosts
 250	IN	PTR	jarvis.enclave.kubernerdes.com.
 251	IN	PTR	spark-e.enclave.kubernerdes.com.
 252	IN	PTR	wheatley.enclave.kubernerdes.com.

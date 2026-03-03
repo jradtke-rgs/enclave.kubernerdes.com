@@ -1,7 +1,7 @@
 $TTL 604800 
 $ORIGIN enclave.kubernerdes.com. 
 @	IN SOA      kubernerd.kubernerdes.com.  root.kubernerdes.com. ( 
-            2026020801 ; Serial
+            2026030301 ; Serial
             604800     ; Refresh
             86400      ; Retry
             2419200    ; Expire
@@ -19,6 +19,7 @@ airport-extreme IN 	A	10.10.12.3
 nuc-00-01	IN	A	10.10.12.8
 nuc-00-02	IN	A	10.10.12.9
 nuc-00 		IN	A	10.10.12.10
+hauler		IN	CNAME 	nuc-00.enclave.kubernerdes.com.
 librenms	IN	A	10.10.12.12
 
 ; Load Balancer for Harvester Cluster(s) - one LB per Harvester Cluster
@@ -36,7 +37,7 @@ nuc-01-kvm	IN	A	10.10.12.111
 nuc-02-kvm	IN	A	10.10.12.112
 nuc-03-kvm	IN	A	10.10.12.113
 
-; Hadrian VIP
+; Haproxy VIP for Ollama and OpenWebUI
 nuc-00-03-vip	IN	A	10.10.12.193
 
 ; Rancher Cluster
@@ -45,10 +46,21 @@ rancher-01	IN	A	10.10.12.211
 rancher-02	IN	A	10.10.12.212
 rancher-03	IN	A	10.10.12.213
 
+; Observability Cluster
 observability		IN	A	10.10.12.220
 observability-01 	IN 	A 	10.10.12.221
 observability-02 	IN	 A 	10.10.12.222
 observability-03 	IN	 A 	10.10.12.223
+
+; Enclave Apps Cluster
+enclave-apps 		IN	A	10.10.12.230
+enclave-apps-01 	IN 	A 	10.10.12.231
+enclave-apps-02 	IN	A 	10.10.12.232
+enclave-apps-03 	IN	A 	10.10.12.232
+
+; First entry is the proxy node in front of the DGX
+spark-e-api		IN	A	10.10.12.93
+spark-e			IN	A	10.10.12.251
 
 ; DHCP CIDR 10.10.15.0/24
 dhcp-1	 IN	 A	 10.10.15.1
@@ -307,6 +319,7 @@ vpn-dhcp-253	 IN	 A	 10.10.15.253
 vpn-dhcp-254	 IN	 A	 10.10.15.254
 
 ; Application Wildcard Endpoints
+*.enclave.kubernerdes.com.		IN	A	10.10.12.230
 *.apps.rke2-harv.kubernerdes.com. 	IN 	A 	10.10.12.170
 *.apps.rke2-harv-dc-01.kubernerdes.com. IN 	A 	10.10.12.230
 
