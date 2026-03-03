@@ -2,6 +2,7 @@
 
 sudo su -
 
+# The following is necessary if you are using SLES (and not LEAP)
 # This script assumes you have already registered your node (using post_install.sh)
 reg_node() {
 SUSEConnect -e <reg_email> -r <reg_code>
@@ -12,7 +13,7 @@ SUSEConnect --product sle-module-server-applications/15.7/x86_64
 }
 
 # Open Ports
-TCP_PORTS="9000 80 443 6443"
+TCP_PORTS="9000 80 443 6443 11434 12000"
 for PORT in $TCP_PORTS
 do 
   firewall-cmd --permanent --add-port=${PORT}/tcp
@@ -34,27 +35,3 @@ cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.$(uuidgen | tr -d '-' | hea
 curl -o /etc/haproxy/haproxy.cfg https://raw.githubusercontent.com/jradtke-rgs/enclave.kubernerdes.com/refs/heads/main/Files/nuc-00-03/etc_haproxy_haproxy.cfg
 sudo systemctl enable haproxy --now
 
-# Fix/update AppArmor (to allow my certificate file directory location)
-  1. Check what HAProxy is actually failing on:
-  sudo journalctl -u haproxy -n 20 --no-pager
-
-  2. Confirm AppArmor is the culprit (EACCES even as root = AppArmor):
-  sudo strace -e openat /usr/sbin/haproxy -c -f /etc/haproxy/haproxy.cfg 2>&1 | grep -i 'pem\|EACCES\|ENOENT'
-
-  3. Review the HAProxy AppArmor profile to see what paths are allowed:
-  sudo cat /etc/apparmor.d/usr.sbin.haproxy
-
-  4. Create the local override to allow cert directory access:
-  sudo tee /etc/apparmor.d/local/usr.sbin.haproxy > /dev/null << 'EOF'
-  # Allow HAProxy to read SSL certificates from /etc/haproxy/certs/
-  /etc/haproxy/certs/** r,
-  EOF
-
-  5. Reload the AppArmor profile:
-  sudo apparmor_parser -r /etc/apparmor.d/usr.sbin.haproxy
-
-  6. Verify the config is now valid:
-  sudo /usr/sbin/haproxy -c -f /etc/haproxy/haproxy.cfg
-
-  7. Start the service:
-  sudo systemctl start haproxy
