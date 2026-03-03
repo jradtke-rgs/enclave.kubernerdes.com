@@ -1,0 +1,13 @@
+Host 10.10.12.101 10.10.12.102 10.10.12.103 nuc-01 nuc-02 nuc-03
+	User rancher
+	IdentityFile ~/.ssh/id_rsa-kubernerdes
+Host 10.10.12.211 10.10.12.212 10.10.12.213 rancher-0*
+	User sles
+	IdentityFile ~/.ssh/id_rsa-kubernerdes
+Host 10.10.12.221 10.10.12.222 10.10.12.223 observability-0*
+	User sles
+	IdentityFile ~/.ssh/id_rsa-kubernerdes
+Host 10.10.12.231 10.10.12.232 10.10.12.233 enclaveapps-0*
+	User sles
+	IdentityFile ~/.ssh/id_rsa-kubernerdes
+
