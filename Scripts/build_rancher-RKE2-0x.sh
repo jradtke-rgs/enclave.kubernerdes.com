@@ -13,22 +13,26 @@
 sudo su -
 
 # Remove any existing host entry
-sudo sed -i -e '/rancher/d' /etc/hosts
 # Add all the Rancher Nodes to /etc/hosts
+sed -i -e '/rancher/d' /etc/hosts
+
 cat << EOF | tee -a  /etc/hosts
 
-# Rancher Nodes
+# rancher Nodes
 10.10.12.211    rancher-01.enclave.kubernerdes.com rancher-01
 10.10.12.212    rancher-02.enclave.kubernerdes.com rancher-02
 10.10.12.213    rancher-03.enclave.kubernerdes.com rancher-03
 EOF
 
 # Set some variables
+cat << EOF | tee ~/.rancher.vars
 export MY_RKE2_VERSION=v1.34.4+rke2r1
 export MY_RKE2_INSTALL_CHANNEL=v1.34
 export MY_RKE2_TOKEN=Waggoner
 export MY_RKE2_ENDPOINT=10.10.12.210
 export MY_RKE2_HOSTNAME=rancher.enclave.kubernerdes.com
+EOF
+source ~/.rancher.vars
 
 # Make sure the proxy allows ports 6443 and 9345
 # 6443 = Kubernetes API
@@ -71,6 +75,7 @@ case $(uname -n) in
   ;;
 esac
 curl -sfL https://get.rke2.io | INSTALL_RKE2_CHANNEL=${MY_RKE2_INSTALL_CHANNEL} sh -
+echo "export PATH=\$PATH:/opt/rke2/bin" >> ~/.bashrc
 
 # Enable and start the rke2-server service
 case $(uname -n) in
@@ -78,7 +83,8 @@ case $(uname -n) in
     systemctl enable rke2-server.service --now
   ;;
   *)
-    sleep 120 # allow time for the first node to complete install
+    SLEEPY_TIME=$(shuf -i 30-45 -n 1)
+    sleep $SLEEPY_TIME # allow time for the first node to complete install
     systemctl enable rke2-server.service --now
   ;;
 esac
@@ -96,14 +102,18 @@ esac
 
 ## RECONNECT TO NODES via ssh
 
+sudo su -
+
 # This needs to be done after the restart (apparently)
 # Add RKE2 binaries to PATH (kubectl, crictl, etc.)
-export PATH=$PATH:/var/lib/rancher/rke2/bin
 echo 'export PATH=$PATH:/var/lib/rancher/rke2/bin' >> ~/.bashrc
+source ~/.bashrc
 
 # Make a copy of the KUBECONFIG for non-root use
-# TODO:  I need to 1/ decide if this script should run as root (probably: yes), figure out what user to store the kubeconfig with (probably: sles)
 mkdir ~/.kube; sudo cp /etc/rancher/rke2/rke2.yaml ~/.kube/config; sudo chown $(whoami) ~/.kube/config
+
+echo 'export PATH=$PATH:/opt/rke2/bin' >> ~sles/.bashrc
+echo 'export KUBECONFIG=$HOME/.kube/config' >> ~sles/.bashrc
 mkdir ~sles/.kube; sudo cp /etc/rancher/rke2/rke2.yaml ~sles/.kube/config; sudo chown -R sles ~sles/.kube/
 export KUBECONFIG=~/.kube/config
 openssl s_client -connect 127.0.0.1:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.0
@@ -111,12 +121,18 @@ grep DNS cert.0
 kubectl get nodes
 
 # Replace localhost IP with the HAproxy endpoint
-sed -i -e "s/127.0.0.1/${MY_RKE2_ENDPOINT}/g" $KUBECONFIG
+source ~/.rancher.vars
+sed -i -e "s/127.0.0.1/${MY_RKE2_ENDPOINT}/g" ~sles/.kube/config
 openssl s_client -connect 127.0.0.1:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.1
 kubectl get nodes
 
+exit
+
 ## RANCHER
 # Run this from kubernerd
+scp sles@rancher-01:.kube/config ~/.kube/enclave-rancher.kubeconfig
+export KUBECONFIG=~/.kube/enclave-rancher.kubeconfig
+
 helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
 helm repo update
 

@@ -319,7 +319,6 @@ vpn-dhcp-253	 IN	 A	 10.10.15.253
 vpn-dhcp-254	 IN	 A	 10.10.15.254
 
 ; Application Wildcard Endpoints
-#*.enclave.kubernerdes.com.		IN	A	10.10.12.230
 *.apps.rke2-harv.kubernerdes.com. 	IN 	A 	10.10.12.170
 *.apps.rke2-harv-dc-01.kubernerdes.com. IN 	A 	10.10.12.230
 
