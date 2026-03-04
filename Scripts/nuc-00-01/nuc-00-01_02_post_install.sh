@@ -57,6 +57,11 @@ case $(uname -n) in
     curl -o /etc/dhcpd.d/dhcpd-hosts.conf https://raw.githubusercontent.com/jradtke-rgs/enclave.kubernerdes.com/refs/heads/main/Files/nuc-00-01_etc_dhcpd.d_dhcpd-hosts.conf
 
   sed -i -e 's/DHCPD_INTERFACE=""/DHCPD_INTERFACE="eth0"/g' /etc/sysconfig/dhcpd
+  # For some reason, dhcpd was not configured correctly, thereby preventing it from starting at boot
+  sudo mkdir -p /etc/systemd/system/dhcpd.service.d && \
+  printf '[Unit]\nRequires=network-online.target\nAfter=network-online.target\n' | sudo tee /etc/systemd/system/dhcpd.service.d/override.conf && \
+  sudo systemctl daemon-reload
+
   systemctl enable dhcpd --now
   systemctl status dhcpd
   ;;

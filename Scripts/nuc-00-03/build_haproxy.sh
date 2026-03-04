@@ -13,10 +13,15 @@ SUSEConnect --product sle-module-server-applications/15.7/x86_64
 }
 
 # Open Ports
-TCP_PORTS="9000 80 443 6443 11434 12000"
+TCP_PORTS="9000 80 443 6443 11434 12000 9345"
 for PORT in $TCP_PORTS
 do 
   firewall-cmd --permanent --add-port=${PORT}/tcp
+done
+UDP_PORTS="9000 80 443 6443 11434 12000 9345"
+for PORT in $UDP_PORTS
+do
+  firewall-cmd --permanent --add-port=${PORT}/udp
 done
 firewll-cmd --reload
 

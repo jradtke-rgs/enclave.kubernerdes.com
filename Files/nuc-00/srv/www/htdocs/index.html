@@ -15,9 +15,9 @@
 <TR>
   <TD>
     <H3>Management UIs</H3>
-      <A HREF="https://rancher.enclave.kubernerdes.com" target="rancher">Rancher Console - Kubernetes Cluster</A></BR>
-      <A HREF="https://observability.enclave.kubernerdes.com/#/welcome" target="observability">SUSE Observability (Stackstate)</A></BR>
-      <A HREF="https://neuvector.enclave.kubernerdes.com" target="neuvector">SUSE Security (NeuVector)</A></BR>
+      <A HREF="https://rancher.enclave.kubernerdes.com" target="rancher">Rancher Manager Console - Kubernetes Cluster</A></BR>
+      <A HREF="https://observability.enclave.kubernerdes.com/#/welcome" target="observability">RGS Observability (Stackstate)</A></BR>
+      <A HREF="https://neuvector.enclave.kubernerdes.com" target="neuvector">RGS Security (NeuVector)</A></BR>
       <HR>
       <A HREF="https://harvester-edge.enclave.kubernerdes.com" target="harvester-edge">Harvester Dashboard - Edge</A></BR>
       <A HREF="https://10.10.12.100" target="harvester-edge">Harvester Dashboard - Edge (by IP address)</A></BR>
@@ -26,11 +26,11 @@
     <H3>Infrastructure UIs </H3>
       <HR>
       <A HREF="./kubernerdes.php" target=enclave>Kubernerdes K8s endpoints</A><BR>
-      <A HREF="http://10.10.12.93:9000/stats" target=haproxy>HAProxy Dashboard - Edge</A><BR>
+      <A HREF="http://10.10.12.93:9000/stats" target=haproxy>HAProxy Dashboard - Enclave</A><BR>
       <HR>
-      <A HREF="http://10.10.12.111/#/">NUC-01 - KVM</A><BR>
-      <A HREF="http://10.10.12.112/#/">NUC-02 - KVM</A><BR>
-      <A HREF="http://10.10.12.113/#/">NUC-03 - KVM</A><BR>
+      <A HREF="http://10.10.12.111/#/" target="nuc-01">NUC-01 - KVM</A><BR>
+      <A HREF="http://10.10.12.112/#/" target="nuc-02">NUC-02 - KVM</A><BR>
+      <A HREF="http://10.10.12.113/#/" target="nuc-03">NUC-03 - KVM</A><BR>
   </TD>
 </TR>
 </TABLE>
@@ -61,11 +61,9 @@
   </TD>
   <TD>
     <H3>Hardware Administration</H3>
-      <A HREF="https://10.10.12.1:443/">Sophos User Portal</A> <BR>
-      <A HREF="https://10.10.12.1:4444/">Sophos Admin Console</A> <BR>
+      <A HREF="https://10.10.12.1:443/" target="firewall">Sophos User Portal</A> <BR>
+      <A HREF="https://10.10.12.1:4444/" target="firewall">Sophos Admin Console</A> <BR>
       <A HREF="https://10.10.12.2" target="newe">Cisco Switch Login SG300-28 </A> <BR>
-      <A HREF="https://truenas.enclave.kubernerdes.com:443" target=newz>TrueNAS</A> <BR>
-      <A HREF="https://10.10.12.3" target="newer">Apple Airport</A> <BR>
     </TD>
 </TR>
 </TABLE>
@@ -73,8 +71,12 @@
 <TABLE width=800 border=1 bgcolor=#f9f9f9>
 <TH colspan=2>Vendor Links</TH>
 <TR>
-  <TD colspan=2>
-    <A HREF="https://scc.suse.com/home">SUSE Customer Center (SCC)</A> <BR>
+  <TD>
+    <A HREF="https://rancherfederal.github.io/carbide-docs/docs/intro">Rancher Carbide Docs</A><BR>
+    <A HREF="https://portal.ranchercarbide.dev/product">Rancher Carbide Portal</A><BR>
+    <A HREF="https://docs.hauler.dev/docs/intro">Hauler Docs</A><BR>
+  </TD>
+  <TD>
     <A HREF="https://documentation.suse.com/">SUSE Documentation </A> <BR>
     <A HREF="https://apps.rancher.io/" target="appco">SUSE Application Collection (AppCo)</A> <BR>
     <A HREF="https://play.stackstate.com/#/welcome" target="stackstate">SUSE Observability (StackState) - Demo (Play.stackstate.com)</A></BR>

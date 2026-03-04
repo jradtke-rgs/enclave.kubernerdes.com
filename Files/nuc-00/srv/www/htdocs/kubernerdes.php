@@ -37,7 +37,7 @@ $verboseTroubleshooting=0;
 <HEAD>
   <TITLE>Kubernerdes Clusters and Services | &#169 2025 </TITLE>
   <LINK REL="stylesheet" HREF="./styles.css" TYPE="text/css">
-  <!-- <meta http-equiv="refresh" content="3" -->
+  <!-- <meta http-equiv="refresh" content="5" -->
 <?php
 // <!-- This section is located here as it provides the filename for the meta refresh tag -->
 // Directory containing kubeconfig files

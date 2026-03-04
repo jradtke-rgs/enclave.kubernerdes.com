@@ -134,4 +134,9 @@ if [ "$total_errors" -gt 0 ]; then
   exit 1
 fi
 
+cleanup_files() {
+  sed -i -e 's/\(\$5\$\).*/\1/'  ../Files/nuc-00-03/etc/haproxy/haproxy.cfg
+}
+
+cleanup_files
 echo "All backups completed successfully."
