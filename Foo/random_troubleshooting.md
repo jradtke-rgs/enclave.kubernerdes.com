@@ -94,3 +94,30 @@ export CLUSTERID=“c-xxxxxxxxx” #
 kubectl patch clusters.management.cattle.io $CLUSTERID -p ‘{“metadata”:{“finalizers”:}}’ --type=merge
 kubectl delete clusters.management.cattle.io $CLUSTERID
 ```
+
+## Rancher Manager
+```
+kubectl -n cattle-system get pods -l app=rancher -o wide
+kubectl -n cattle-system logs -l app=cattle-agent
+kubectl -n cattle-system logs -l app=cattle-cluster-agentA
+kubectl -n cattle-system get deployment
+kubectl -n cattle-system rollout status deploy/rancher
+kubectl -n cattle-system rollout status deploy/rancher-webhook
+
+See "systemctl status rke2-server.service" and "journalctl -xeu rke2-server.service" for details.
+openssl s_client -connect 127.0.0.1:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.0
+openssl s_client -connect 10.10.12.121:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.1
+openssl s_client -connect 10.10.12.120:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.2
+
+# service ClusterIP CIDR
+echo '{"apiVersion":"v1","kind":"Service","metadata":{"name":"tst"},"spec":{"clusterIP":"1.1.1.1","ports":[{"port":443}]}}' | kubectl apply -f - 2>&1 | sed 's/.*valid IPs is //'
+# Pod CIDR
+kubectl get nodes -o jsonpath='{.items[*].spec.podCIDR}'
+
+##
+kubectl get pods -n kube-system -l k8s-app=kube-dns -o wide
+kubectl run -i --tty --rm debug --image=busybox --restart=Never -- sh
+
+kubectl apply -f https://k8s.io/examples/admin/dns/dnsutils.yaml
+kubectl exec -i -t dnsutils -- nslookup kubernetes.default
+```
