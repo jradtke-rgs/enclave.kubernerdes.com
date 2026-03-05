@@ -8,8 +8,6 @@
 # SU to root
 sudo su -
 
-sed -i -e '/observability/d' /etc/hosts
-
 case $(uname -n) in 
   # *************************
   ## RANCHER CLUSTER
@@ -48,6 +46,7 @@ export MY_RKE2_HOSTNAME=observability.enclave.kubernerdes.com
 EOF
 source ~/.rancher.vars
 
+sed -i -e '/observability/d' /etc/hosts
 cat << EOF | tee -a  /etc/hosts
 
 # observability nodes
