@@ -1,6 +1,11 @@
 # This "script" was not intended to be run as a script, and instead cut-and-paste the pieces (hence no #!/bin/sh at the top ;-_
 # Reference: https://observabilitymanager.docs.observability.com/how-to-guides/new-user-guides/kubernetes-cluster-setup/k3s-for-observability
 
+scp 10.10.12.221:.kube/config .kube/enclave-observability.kubeconfig
+echo "Note: you should update the cluster: name: value"
+export KUBECONFIG=~/.kube/enclave-observability.kubeconfig
+chmod 0664 $KUBECONFIG
+scp $KUBECONFIG 10.10.12.10:/srv/www/.kube/
 
 #######################################
 # Install Cert Manager
@@ -44,12 +49,12 @@ helm upgrade --install \
     suse-observability/suse-observability
 
 kubectl get all -n suse-observability
-
 grep 'admin password' $(find $HOME -name baseConfig_values.yaml)
 
 # Create ingress using traefik for O11y
 cat << EOF > suse-observability-ingress.yaml
 ---
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: suse-observability-ui
