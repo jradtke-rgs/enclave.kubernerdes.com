@@ -105,7 +105,6 @@ echo 'export PATH=$PATH:/var/lib/rancher/rke2/bin/'  >> ~/.bashrc
 echo 'export PATH=$PATH:/opt/rke2/bin' >> ~sles/.bashrc
 echo 'export PATH=$PATH:/var/lib/rancher/rke2/bin/'  >> ~sles/.bashrc
 
-
 # Enable and start the rke2-server service
 case $(uname -n) in
   rancher-01|observability-01) systemctl enable rke2-server.service --now ;;
@@ -132,6 +131,7 @@ mkdir ~sles/.kube; sudo cp ~/.kube/config  ~sles/.kube/config; sudo chown -R sle
 export KUBECONFIG=~/.kube/config
 openssl s_client -connect 127.0.0.1:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.0
 grep DNS cert.0
+[ -f .rancher.vars ] && { source .rancher.vars; sed -i -e "s/127.0.0.1/${MY_RKE2_ENDPOINT}/g" ~sles/.kube/config; }
 kubectl get nodes
 
 exit 0
