@@ -24,13 +24,32 @@ Eventually this repo will be the technical steps and there will be an associated
   * Kubernetes cluster for hosting Applications
   * [bonus] Integrated NVIDIA AI hardware with RGS K8s/cloud-native stack
 
-## Prerequisites
+## Design and Plan (Day 0)
 
+Prerequisites 
 * Gain access to Carbide Portal - by requesting Carbide License
 * 3 x NUCs (or similar hardware) that are configured identically (re: Storage/Network Interfaces)
 * 1 x system with Keyboard/Video/Mouse for administrating resources (I use another NUC)
 * Internet connectivity
 * [Hardware - Overview](./Hardware.md)
+
+## Build (Day 1)
+
+High-level steps
+- Build "Admin Host" (nuc-00 - physical node)
+- Build "Infra Nodes" (nuc-00-01/nuc-00-02 - virtual machines - "DNS and PXE nodes")
+- Install and setup Hauler on Admin Host
+  - pull Harvester, Rancher, and related bits
+- Build Harvester Cluster (USB or PXE)
+- Deploy 3 x Linux VMs to host Rancher Manager Server (RMS)
+- Install K3s/RKE2 on Linux VMs, then install Rancher Manager Server
+- Deploy Kubernetes using RMS (RGS SL-Micro + RKE2)
+
+## Operate (Day 2)
+- Enable Monitoring
+- Update Grafana
+- Integrate with external systems
+- Configure RBAC
 
 ## Environment Overview
 
@@ -40,18 +59,6 @@ Once the software has been acquired, the Internet link can be disconnected and t
 [Hardware Inventory and Description](./Hardware.md)
 
 ![Kubernerdes Enclave Hardware](Images/KubernerdesEnclaveHardware-with_NVIDIA.png)
-
-## High-level steps
-
-- Build "Admin Host" (nuc-00 - physical node)
-- Build "Infra Nodes" (nuc-00-01/nuc-00-02 - virtual machines - "DNS and PXE nodes")
-- Install and setup Hauler on Admin Host
-  - pull Harvester, Rancher, and related bits
-- Build Harvester Cluster (USB or PXE)
-- Deploy 3 x Linux VMs to host Rancher Manager Server (RMS)
-- Install K3s/RKE2 on Linux VMs, then install Rancher Manager Server 
-- Deploy Kubernetes using RMS (RGS SL-Micro + K3s)
-- Deploy Kubernetes using RMS (RGS SL-Micro + RKE2)
 
 ## TODO
 
