@@ -2,23 +2,13 @@
 
 sudo su -
 
-# The following is necessary if you are using SLES (and not LEAP)
-# This script assumes you have already registered your node (using post_install.sh)
-reg_node() {
-SUSEConnect -e <reg_email> -r <reg_code>
-SUSEConnect --product sle-module-basesystem/15.7/x86_64
-SUSEConnect --product sle-module-server-applications/15.7/x86_64
-# TODO - add a check to see whether HA is enabled and if not, enable it
-#SUSEConnect --product sle-ha/15.7/x86_64 -r (add reg code for HA Extension)
-}
-
 # Open Ports
 TCP_PORTS="9000 80 443 6443 11434 12000 9345"
 for PORT in $TCP_PORTS
 do 
   firewall-cmd --permanent --add-port=${PORT}/tcp
 done
-UDP_PORTS="9000 80 443 6443 11434 12000 9345"
+UDP_PORTS="9345"
 for PORT in $UDP_PORTS
 do
   firewall-cmd --permanent --add-port=${PORT}/udp
