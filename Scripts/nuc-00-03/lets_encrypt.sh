@@ -30,7 +30,6 @@ sudo mkdir -p /etc/haproxy/certs
 
 # TODO:  ummm... where are the actual steps to request the cert.
 
-
 # Create combined PEM for spark-e
 sudo cat /etc/letsencrypt/live/spark-e.enclave.kubernerdes.com/fullchain.pem \
         /etc/letsencrypt/live/spark-e.enclave.kubernerdes.com/privkey.pem \

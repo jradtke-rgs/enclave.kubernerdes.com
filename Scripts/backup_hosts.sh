@@ -135,8 +135,9 @@ if [ "$total_errors" -gt 0 ]; then
 fi
 
 cleanup_files() {
+  echo ""
   echo "Note: cleansing files"
-  sed -i -e 's/\(\$5\$\).*/\1/'  ../Files/nuc-00-03/etc/haproxy/haproxy.cfg
+  sed -i -e 's/\(\$5\$\).*/\1/'  ../Files/nuc-00-03/etc/haproxy/haproxy.cfg # Strip passwords from haproxy
 }
 
 cleanup_files
