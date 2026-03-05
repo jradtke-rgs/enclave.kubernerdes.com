@@ -11,11 +11,11 @@ kubectl get nodes
 Set the variable for CLUSTERNAME # This is whatever you provided when you created the stackpack in the WebUI
 Retrieve the SERVICE_TOKEN from the StackState WebUI
 ```
-CLUSTER_NAME=harv-edgge
+CLUSTER_NAME=harverster
 CLUSTER_NAME=rancher 
 ```
 
-# TODO:  May need to figure out how to handle CLUSTER_NAME - need to test for "harv-edge"
+# Let's roll
 ```
 helm repo add suse-observability https://charts.rancher.com/server-charts/prime/suse-observability
 helm repo update
