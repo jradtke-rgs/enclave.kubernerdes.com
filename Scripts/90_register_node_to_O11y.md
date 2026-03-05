@@ -1,22 +1,18 @@
 # Manual registration for Observability Clients
 
-This is NOT a script, for a reason.  This is a bit of a convoluted process that I need to get sorted later.
-
-```
-export KUBECONFIG=~/.kube/enclave-rancher.kubeconfig
-kubectl get nodes
-
-```
+This is NOT a script, and for a good reason.  This is a bit of a convoluted process that I need to get sorted later.
 
 Set the variable for CLUSTERNAME # This is whatever you provided when you created the stackpack in the WebUI
 Retrieve the SERVICE_TOKEN from the StackState WebUI
-```
-CLUSTER_NAME=harverster
-CLUSTER_NAME=rancher 
-```
 
 # Let's roll
 ```
+CLUSTER_NAME=harverster # Select a host that you are adding
+CLUSTER_NAME=rancher 
+
+export KUBECONFIG=~/.kube/enclave-${CLUSTER_NAME}.kubeconfig
+kubectl get nodes # Confirm kubectl works and pointing at correct cluster
+
 helm repo add suse-observability https://charts.rancher.com/server-charts/prime/suse-observability
 helm repo update
 helm upgrade --install \
