@@ -99,7 +99,12 @@ case $(uname -n) in
   ;;
 esac
 curl -sfL https://get.rke2.io | INSTALL_RKE2_CHANNEL=${MY_RKE2_INSTALL_CHANNEL} sh -
-echo "export PATH=\$PATH:/opt/rke2/bin" >> ~/.bashrc
+# Update path for RKE2 specific kubectl, etc... commands
+echo 'export PATH=$PATH:/opt/rke2/bin' >> ~/.bashrc
+echo 'export PATH=$PATH:/var/lib/rancher/rke2/bin/'  >> ~/.bashrc
+echo 'export PATH=$PATH:/opt/rke2/bin' >> ~sles/.bashrc
+echo 'export PATH=$PATH:/var/lib/rancher/rke2/bin/'  >> ~sles/.bashrc
+
 
 # Enable and start the rke2-server service
 case $(uname -n) in
@@ -121,5 +126,12 @@ case $NAME in
     echo "Shutting down to ensure transactional update is committed" && shutdown now -r
   ;;
 esac
+
+mkdir ~/.kube; sudo cp /etc/rancher/rke2/rke2.yaml ~/.kube/config; sudo chown $(whoami) ~/.kube/config
+mkdir ~sles/.kube; sudo cp ~/.kube/config  ~sles/.kube/config; sudo chown -R sles ~sles/.kube/config
+export KUBECONFIG=~/.kube/config
+openssl s_client -connect 127.0.0.1:6443 -showcerts </dev/null | openssl x509 -noout -text > cert.0
+grep DNS cert.0
+kubectl get nodes
 
 exit 0
