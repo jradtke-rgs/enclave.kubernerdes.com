@@ -8,6 +8,22 @@ chmod 0664 $KUBECONFIG
 scp $KUBECONFIG 10.10.12.10:/srv/www/.kube/
 
 #######################################
+# Install Local Path Provisioner for Storage
+#######################################
+# NOTE: The RKE2 VM disks are already backed by Harvester Longhorn (replica=3),
+#       so we use local-path-provisioner to avoid redundant replication.
+#       Do NOT install standalone Longhorn or the Harvester CSI driver here.
+LOCAL_PATH_VERSION=v0.0.30
+kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/${LOCAL_PATH_VERSION}/deploy/local-path-storage.yaml
+kubectl wait --for=condition=available deployment/local-path-provisioner -n local-path-storage --timeout=60s
+
+# Set local-path as the default StorageClass
+kubectl patch sc local-path -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+
+# Verify
+kubectl get sc
+
+#######################################
 # Install Cert Manager
 #######################################
 CERTMGR_VERSION=v1.18.0
@@ -51,7 +67,7 @@ helm upgrade --install \
 kubectl get all -n suse-observability
 grep 'admin password' $(find $HOME -name baseConfig_values.yaml)
 
-# Create ingress using traefik for O11y
+# Create ingress using traefik for O11y (for K3s)
 cat << EOF > suse-observability-ingress.yaml
 ---
 apiVersion: networking.k8s.io/v1
@@ -78,6 +94,30 @@ spec:
   tls:
   - hosts:
     - observability.enclave.kubernerdes.com
+EOF
+kubectl apply -f ./suse-observability-ingress.yaml
+
+# Create ingress using traefik for O11y (for RKE2)
+cat << EOF > suse-observability-ingress.yaml
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: suse-observability-ui
+  namespace: suse-observability
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: observability.enclave.kubernerdes.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: suse-observability-router
+            port:
+              number: 8080
 EOF
 kubectl apply -f ./suse-observability-ingress.yaml
 
