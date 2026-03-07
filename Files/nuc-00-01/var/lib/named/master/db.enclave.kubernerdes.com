@@ -1,7 +1,7 @@
 $TTL 604800 
 $ORIGIN enclave.kubernerdes.com. 
 @	IN SOA      kubernerd.kubernerdes.com.  root.kubernerdes.com. ( 
-            2026030301 ; Serial
+            2026030601 ; Serial
             604800     ; Refresh
             86400      ; Retry
             2419200    ; Expire
@@ -28,7 +28,7 @@ nuc-00-03	IN	A	10.10.12.93
 
 ; Hardware Devices in the 1xx range
 ; NUC cluster (Harvester Edge)
-harvester-edge	IN	A	10.10.12.100
+harvester	IN	A	10.10.12.100
 nuc-01		IN	A	10.10.12.101
 nuc-02		IN	A	10.10.12.102
 nuc-03		IN	A	10.10.12.103
@@ -319,7 +319,6 @@ vpn-dhcp-253	 IN	 A	 10.10.15.253
 vpn-dhcp-254	 IN	 A	 10.10.15.254
 
 ; Application Wildcard Endpoints
-*.apps.rke2-harv.kubernerdes.com. 	IN 	A 	10.10.12.170
-*.apps.rke2-harv-dc-01.kubernerdes.com. IN 	A 	10.10.12.230
+*.applications.enclave.kubernerdes.com. 	IN 	A 	10.10.12.230
 
 

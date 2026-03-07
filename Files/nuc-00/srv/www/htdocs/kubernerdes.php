@@ -35,7 +35,7 @@ $verboseTroubleshooting=0;
 ?>
 <HTML>
 <HEAD>
-  <TITLE>Kubernerdes Clusters and Services | &#169 2025 </TITLE>
+  <TITLE>Kubernerdes Enclave Clusters and Services | &#169 2025 </TITLE>
   <LINK REL="stylesheet" HREF="./styles.css" TYPE="text/css">
   <!-- <meta http-equiv="refresh" content="5" -->
 <?php
