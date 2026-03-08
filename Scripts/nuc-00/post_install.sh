@@ -99,6 +99,9 @@ sudo zypper in git
 sudo mkdir /srv/www/htdocs/enclave.kubernerdes.com
 sudo git clone https://github.com/jradtke-rgs/enclave.kubernerdes.com.git /srv/www/htdocs/enclave.kubernerdes.com
 
+# Directory for Hauler store
+sudo mkdir /srv/www/htdocs/store
+
 #### #### ####
 ### Install kubectl
 sudo tee /etc/zypp/repos.d/kubernetes.repo <<EOF
