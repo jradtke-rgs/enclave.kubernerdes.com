@@ -121,3 +121,16 @@ kubectl run -i --tty --rm debug --image=busybox --restart=Never -- sh
 kubectl apply -f https://k8s.io/examples/admin/dns/dnsutils.yaml
 kubectl exec -i -t dnsutils -- nslookup kubernetes.default
 ```
+
+## Hauler Foo
+```
+source ~/.hauler/credentials && for repo in rancher/rancher rancher/shell rancher/fleet rancher/webhook
+   rancher/rancher-agent rancher/system-agent carbide/nginx-html-base nginx-html-base rancher/mirrored-nginx
+   rancher/hardened-nginx; do TOKEN=$(curl -s -u "${HAULER_USER}:${HAULER_PASSWORD}"
+   "https://rgcrprod.azurecr.us/oauth2/token?service=rgcrprod.azurecr.us&scope=repository:${repo}:pull" | python3 -c
+    "import sys,json; print(json.load(sys.stdin).get('access_token',''))") && RESULT=$(curl -s -w "\n%{http_code}"
+   -H "Authorization: Bearer $TOKEN" "https://rgcrprod.azurecr.us/v2/${repo}/tags/list") && CODE=$(echo "$RESULT" |
+   tail -1) && BODY=$(echo "$RESULT" | head -1) && if [ "$CODE" = "200" ]; then echo "FOUND: $repo"; echo "  Tags:
+   $(echo $BODY | python3 -c "import sys,json; tags=json.load(sys.stdin).get('tags',[]); print(',
+   '.join(tags[:10]))") ..."; fi; done
+```
