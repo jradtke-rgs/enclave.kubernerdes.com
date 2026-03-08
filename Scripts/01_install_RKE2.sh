@@ -23,7 +23,7 @@ EOF
 source ~/.rancher.vars
 
 # Remove any existing host entry
-# Add all the Rancher Nodes to /etc/hosts
+# Add all the Rancher Nodes to /etc/hosts - Rancher is the only "statically defined" cluster now
 sed -i -e '/rancher/d' /etc/hosts
 cat << EOF | tee -a  /etc/hosts
 
@@ -33,29 +33,6 @@ cat << EOF | tee -a  /etc/hosts
 10.10.12.213    rancher-03.enclave.kubernerdes.com rancher-03
 EOF
   ;; 
-  # *************************
-  ## OBSERVABILITY CLUSTER 
-  # *************************
-  observability-0*)
-cat << EOF | tee ~/.rancher.vars
-export MY_RKE2_VERSION=v1.34.4+rke2r1
-export MY_RKE2_INSTALL_CHANNEL=v1.34
-export MY_RKE2_TOKEN=WaggonerObservability
-export MY_RKE2_ENDPOINT=10.10.12.220
-export MY_RKE2_HOSTNAME=observability.enclave.kubernerdes.com
-EOF
-source ~/.rancher.vars
-
-sed -i -e '/observability/d' /etc/hosts
-cat << EOF | tee -a  /etc/hosts
-
-# observability nodes
-10.10.12.221    observability-01.enclave.kubernerdes.com observability-01
-10.10.12.222    observability-02.enclave.kubernerdes.com observability-02
-10.10.12.223    observability-03.enclave.kubernerdes.com observability-03
-EOF
-
-  ;;
 esac
 
 # Make sure the proxy allows ports 6443 and 9345
@@ -63,12 +40,15 @@ esac
 # 9345 = RKE2 supervisor/node registration
 # TODO write a test for this?
 
+# NOTE:  In general, the *-01 is the genesis and therefore treated slightly differently.
+#        It will get deployed first, and there should be a pause before other nodes are
+#          addressed
 # Create the RKE2 config directory
 mkdir -p /etc/rancher/rke2
 
 # Write the RKE2 config file
 case $(uname -n) in
-  rancher-01|observability-01)
+  *-01)
     cat << EOF > /etc/rancher/rke2/config.yaml
 token: ${MY_RKE2_TOKEN}
 tls-san:
@@ -88,17 +68,18 @@ EOF
 esac
 
 # Run the install process
-# TODO: set the sleep duration to a variable between 30 and 45
+# TODO: set the sleep duration to a variable between 45 and 90 
 case $(uname -n) in
-  rancher-01|observability-01)
+  *-01)
     echo "Now installing first RKE2 node"
   ;;
   *)
-    SLEEPY_TIME=$(shuf -i 30-45 -n 1)
+    SLEEPY_TIME=$(shuf -i 45-90 -n 1)
     sleep $SLEEPY_TIME 
   ;;
 esac
 curl -sfL https://get.rke2.io | INSTALL_RKE2_CHANNEL=${MY_RKE2_INSTALL_CHANNEL} sh -
+
 # Update path for RKE2 specific kubectl, etc... commands
 echo 'export PATH=$PATH:/opt/rke2/bin' >> ~/.bashrc
 echo 'export PATH=$PATH:/var/lib/rancher/rke2/bin/'  >> ~/.bashrc
@@ -107,9 +88,9 @@ echo 'export PATH=$PATH:/var/lib/rancher/rke2/bin/'  >> ~sles/.bashrc
 
 # Enable and start the rke2-server service
 case $(uname -n) in
-  rancher-01|observability-01) systemctl enable rke2-server.service --now ;;
+  *-01) systemctl enable rke2-server.service --now ;;
   *)
-    SLEEPY_TIME=$(shuf -i 30-45 -n 1)
+    SLEEPY_TIME=$(shuf -i 45-90 -n 1)
     sleep $SLEEPY_TIME # allow time for the first node to complete install
     systemctl enable rke2-server.service --now
   ;;
@@ -119,8 +100,8 @@ esac
 case $NAME in
   SL-Micro)
     case $(uname -n) in
-      rancher-01|observability-01)  SLEEPY_TIME=5; sleep $SLEEPY_TIME ;;
-      *) SLEEPY_TIME=$(shuf -i 30-45 -n 1;) sleep $SLEEPY_TIME ;;
+      *-01) SLEEPY_TIME=5; sleep $SLEEPY_TIME ;;
+      *) SLEEPY_TIME=$(shuf -i 60-90 -n 1;) sleep $SLEEPY_TIME ;;
     esac
     echo "Shutting down to ensure transactional update is committed" && shutdown now -r
   ;;
