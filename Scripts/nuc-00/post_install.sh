@@ -99,9 +99,6 @@ sudo zypper in git
 sudo mkdir /srv/www/htdocs/enclave.kubernerdes.com
 sudo git clone https://github.com/jradtke-rgs/enclave.kubernerdes.com.git /srv/www/htdocs/enclave.kubernerdes.com
 
-# Directory for Hauler store
-sudo mkdir /srv/www/htdocs/store
-
 #### #### ####
 ### Install kubectl
 sudo tee /etc/zypp/repos.d/kubernetes.repo <<EOF
@@ -229,7 +226,6 @@ sudo virt-install \
   --graphics none \
   --location http://10.10.12.10/OS/${INSTALL_DESTINATION} \
   --extra-args="console=ttyS0 textmode=1 inst.auto=http://10.10.12.10/enclave.kubernerdes.com/Files/${VM_HOSTNAME}-autoinst.xml ifcfg=eth0=10.10.12.8/22,10.10.12.1,8.8.8.8 hostname=${VM_HOSTNAME}.enclave.kubernerdes.com"
-
 
 # **********************************
 # Install Hauler and sync content 
