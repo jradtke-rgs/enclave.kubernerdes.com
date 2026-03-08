@@ -1,7 +1,6 @@
 #!/bin/bash
 
-
-# NOTE:  I install this on the infra node which also hosts HTML content (nuc-00)
+# NOTE:  I install and configure hauler on the infra node which also hosts HTML content (nuc-00)
 # https://docs.hauler.dev/docs/introduction/install
 
 sudo su -
