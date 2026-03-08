@@ -10,7 +10,9 @@ This is NOT an official repository.  It is meant to be a quick way to build a la
 * If you happened to find this repo and do not (yet) have a Carbide subscription, I have good news - you can do almost ALL of this using community bits (you just loose some functionality in terms of heightened inspection, security, etc.. of the bits.  The Rancher Governrment Carbide Applications portal also will not be available.
 
 ## Status
-**Status**: Work in Progress (Feb 2026) - currently shifting focus in this repo from community bits to RGS Carbide bits.
+**Status**: Work in Progress (March 2026) - currently shifting focus in this repo from community bits to RGS Carbide bits.
+
+TOOD: Add a table/matrix of things that have been migrated from community to carbide.
 
 Eventually this repo will be the technical steps and there will be an associated "docs" repo that provides the guidance and details of the tasks and steps provided here. [Documentation](https://github.com/jradtke-rgs/docs.enclave.kubernerdes.com/)
 
