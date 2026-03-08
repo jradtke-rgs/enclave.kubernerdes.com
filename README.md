@@ -86,3 +86,6 @@ While this repo is available via HTTP/S, I will make all the content available o
 [Kasm Technologies and Rancher Government Solutions Partner to Deliver Enterprise-Class Kubernetes-Powered VDI](https://www3-develop.kasmweb.com/alliance-partnership/rancher-government-solutions)  
 
 [Three Easy-Mode Ways of Installing Rancher onto Harvester](https://ranchergovernment.com/blog/three-easy-mode-ways-of-installing-rancher-onto-harvester)
+
+[Rancher Federal Support](https://support.rancherfederal.com/hc/en-us)  
+
