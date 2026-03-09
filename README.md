@@ -12,30 +12,32 @@ This is NOT an official repository.  It is meant to be a quick way to build a la
 ## Status
 **Status**: Work in Progress (March 2026) - currently shifting focus in this repo from community bits to RGS Carbide bits.
 
-TOOD: Add a table/matrix of things that have been migrated from community to carbide.
+TODO: Add a table/matrix of things that have been migrated from community to carbide.
 
 Eventually this repo will be the technical steps and there will be an associated "docs" repo that provides the guidance and details of the tasks and steps provided here. [Documentation](https://github.com/jradtke-rgs/docs.enclave.kubernerdes.com/)
 
 ## Goals
 
-* A fundamental understanding of deploying RGS Carbide bits 
+* A fundamental understanding of deploying RGS Carbide bits (from acquiring to roll-out)
 * A self-sustaining network enclave with:
-  * Infrastructure node hosting DNS, PXE build
+  * Infrastructure node hosting DNS, PXE build environment
   * 3-node Harvester cluster 
   * Rancher Manager Server
-  * Kubernetes cluster for hosting Applications
+  * RGS Observability
+  * RGS Security 
+  * Kubernetes cluster hosting Applications
   * [bonus] Integrated NVIDIA AI hardware with RGS K8s/cloud-native stack
 
-## Design and Plan (Day 0)
+## Day 0) Design and Plan 
 
 Prerequisites 
-* Gain access to Carbide Portal - by requesting Carbide License
+* Gain access to Carbide Portal - by requesting Carbide License from RGS Account Team
 * 3 x NUCs (or similar hardware) that are configured identically (re: Storage/Network Interfaces)
 * 1 x system with Keyboard/Video/Mouse for administrating resources (I use another NUC)
 * Internet connectivity
 * [Hardware - Overview](./Hardware.md)
 
-## Build (Day 1)
+## Day 1) Build 
 
 High-level steps
 - Build "Admin Host" (nuc-00 - physical node)
@@ -45,13 +47,20 @@ High-level steps
 - Build Harvester Cluster (USB or PXE)
 - Deploy 3 x Linux VMs to host Rancher Manager Server (RMS)
 - Install K3s/RKE2 on Linux VMs, then install Rancher Manager Server
-- Deploy Kubernetes using RMS (RGS SL-Micro + RKE2)
 
-## Operate (Day 2)
+## Day 2) Operate 
+
+- Deploy K8s cluster (name: observabilty) using RMS, then install RGS Observability
+- Plumb clusters to RGS Observability
+- Deploy K8s cluster (name: applications) using RMS (RGS SL-Micro + RKE2) 
+- Install RGS Security on "applications" K8s cluster
+- Deploy example apps from community vs carbide to compare in RGS Security
+
 - Enable Monitoring
-- Update Grafana
+- Explore Grafana
 - Integrate with external systems
 - Configure RBAC
+- Deploy update via fleet
 
 ## Environment Overview
 
