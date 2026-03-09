@@ -1,13 +1,15 @@
-# README
+# Kubernerdes Enclave
 
-This single repository contains the overview, architecture, and implementation steps to deploy the components of the RGS stack using Carbide on small form factor PC (Intel NUC).  In this repo we mostly have a collection of scripts, notes, etc.. at this point.  It will change significantly to be more of a guide and reference.
+> A self-contained Kubernetes enclave built on Intel NUCs, powered by [Rancher Government Solutions (RGS)](https://ranchergovernment.com/) Carbide.
 
-This is NOT an official repository.  It is meant to be a quick way to build a lab environment using the "easy methods" to get things working.
+This repository contains the architecture overview, scripts, and implementation steps for deploying the RGS stack on small form-factor hardware (Intel NUCs). It is currently a collection of scripts, notes, and references — and will evolve into a more structured guide over time.
 
-**Advice/Tips**:
+> **Note:** This is *not* an official RGS repository. It is a personal lab environment designed to explore and demonstrate the platform using straightforward, repeatable methods.
 
-* things are changing frequently in the cloud-native space.  I have developed a habit to ensure I check for the most current sources.  (i.e. a video published in June of 2025, was probably started around April/May - and is most likely a bit dated).
-* If you happened to find this repo and do not (yet) have a Carbide subscription, I have good news - you can do almost ALL of this using community bits (you just loose some functionality in terms of heightened inspection, security, etc.. of the bits.  The Rancher Governrment Carbide Applications portal also will not be available.
+**Tips before you dive in:**
+
+* The cloud-native space moves fast. Always verify you are referencing the most current sources — a video published in June 2025 was likely recorded weeks earlier and may already be slightly dated.
+* If you don't yet have a Carbide subscription, you can still follow along using community images. You'll lose some capabilities around hardened image inspection and the Carbide Applications portal, but the core workflow remains the same.
 
 ## Status
 **Status**: Work in Progress (March 2026) - currently shifting focus in this repo from community bits to RGS Carbide bits.
@@ -18,56 +20,54 @@ Eventually this repo will be the technical steps and there will be an associated
 
 ## Goals
 
-* A fundamental understanding of deploying RGS Carbide bits (from acquiring to roll-out)
-* A self-sustaining network enclave with:
-  * Infrastructure node hosting DNS, PXE build environment
-  * 3-node Harvester cluster 
+* Build a fundamental understanding of deploying RGS Carbide — from acquisition through roll-out
+* Stand up a self-sustaining network enclave consisting of:
+  * Infrastructure node hosting DNS and PXE build services
+  * 3-node Harvester cluster
   * Rancher Manager Server
-  * RGS Observability
-  * RGS Security 
-  * Kubernetes cluster hosting Applications
-  * [bonus] Integrated NVIDIA AI hardware with RGS K8s/cloud-native stack
+  * RGS Observability stack
+  * RGS Security stack
+  * Kubernetes cluster for running applications
+  * *Bonus:* Integrated NVIDIA AI hardware with the RGS cloud-native stack
 
-## Day 0) Design and Plan 
+## Day 0 — Design and Plan
 
-Prerequisites 
-* Gain access to Carbide Portal - by requesting Carbide License from RGS Account Team
-* 3 x NUCs (or similar hardware) that are configured identically (re: Storage/Network Interfaces)
-* 1 x system with Keyboard/Video/Mouse for administrating resources (I use another NUC)
+**Prerequisites**
+
+* Carbide Portal access — request a license from the RGS Account Team
+* 3 x NUCs (or similar hardware) with identical storage and network interface configurations
+* 1 x admin workstation with keyboard, video, and mouse (I use a fourth NUC)
 * Internet connectivity
-* [Hardware - Overview](./Hardware.md)
+* [Hardware Overview](./Hardware.md)
 
-## Day 1) Build 
+## Day 1 — Build
 
-High-level steps
-- Build "Admin Host" (nuc-00 - physical node)
-- Build "Infra Nodes" (nuc-00-01/nuc-00-02 - virtual machines - "DNS and PXE nodes")
-- Install and setup Hauler on Admin Host
-  - pull Harvester, Rancher, and related bits
-- Build Harvester Cluster (USB or PXE)
-- Deploy 3 x Linux VMs to host Rancher Manager Server (RMS)
-- Install K3s/RKE2 on Linux VMs, then install Rancher Manager Server
+1. Build the **Admin Host** (`nuc-00` — physical node)
+2. Build the **Infra Nodes** (`nuc-00-01` / `nuc-00-02` — VMs for DNS and PXE services)
+3. Install and configure **Hauler** on the Admin Host
+   - Pull Harvester, Rancher, and related artifacts
+4. Build the **Harvester Cluster** (via USB or PXE)
+5. Deploy 3 Linux VMs to host **Rancher Manager Server** (RMS)
+6. Install K3s/RKE2 on the VMs, then deploy Rancher Manager Server
 
-## Day 2) Operate 
+## Day 2 — Operate
 
-- Deploy K8s cluster (name: observabilty) using RMS, then install RGS Observability
-- Plumb clusters to RGS Observability
-- Deploy K8s cluster (name: applications) using RMS (RGS SL-Micro + RKE2) 
-- Install RGS Security on "applications" K8s cluster
-- Deploy example apps from community vs carbide to compare in RGS Security
+- Deploy a K8s cluster (`observability`) via RMS, then install **RGS Observability**
+- Connect clusters to the Observability stack
+- Deploy a K8s cluster (`applications`) via RMS using SL-Micro + RKE2
+- Install **RGS Security** (NeuVector) on the `applications` cluster
+- Deploy community vs. Carbide images side-by-side for comparison in NeuVector
+- Enable monitoring, explore Grafana dashboards
+- Integrate with external systems and configure RBAC
+- Deploy updates via Fleet
 
-- Enable Monitoring
-- Explore Grafana
-- Integrate with external systems
-- Configure RBAC
-- Deploy update via fleet
+---
 
 ## Environment Overview
 
-The "admin host" (nuc-00) will have access to the Internet to pull down necessary bits, including this REPO. 
-Once the software has been acquired, the Internet link can be disconnected and the environment can be built, and managed, absent of external connectivity.
+The admin host (`nuc-00`) connects to the Internet to pull down the required software and this repository. Once all artifacts have been acquired, the Internet link can be disconnected — the entire environment can be built and managed without external connectivity.
 
-[Hardware Inventory and Description](./Hardware.md)
+See the full [Hardware Inventory and Description](./Hardware.md).
 
 ![Kubernerdes Enclave Hardware](Images/KubernerdesEnclaveHardware-with_NVIDIA.png)
 
@@ -75,28 +75,27 @@ Once the software has been acquired, the Internet link can be disconnected and t
 
 While this repo is available via HTTP/S, I will make all the content available or sourced from a USB device, and then shared from the nuc-00, to emulate an airgap deploy.
 
+---
+
 ## Links
 
 ### Guides
 
-[Carbide Portal](https://portal.ranchercarbide.dev/product/)  
-[Hauler - Product Page](https://ranchergovernment.com/products/hauler)  
-[Hauler - Docs](https://docs.hauler.dev/docs/intro)
-
-[Deploy Rancher Manager - Helm CLI Quick Start](https://ranchermanager.docs.rancher.com/getting-started/quick-start-guides/deploy-rancher-manager/helm-cli)  
-[Virtualization on Kubernetes with Harvester](https://ranchermanager.docs.rancher.com/integrations-in-rancher/harvester)  
+- [Carbide Portal](https://portal.ranchercarbide.dev/product/)
+- [Hauler — Product Page](https://ranchergovernment.com/products/hauler)
+- [Hauler — Documentation](https://docs.hauler.dev/docs/intro)
+- [Deploy Rancher Manager — Helm CLI Quick Start](https://ranchermanager.docs.rancher.com/getting-started/quick-start-guides/deploy-rancher-manager/helm-cli)
+- [Virtualization on Kubernetes with Harvester](https://ranchermanager.docs.rancher.com/integrations-in-rancher/harvester)
 
 ### References
 
-[Harvester Community Images](https://github.com/harvester/harvester/releases)
-[Harvester Intro and Setup - includes VM deployment](https://www.suse.com/c/rancher_blog/harvester-intro-and-setup/)   
+- [Harvester Community Images (GitHub Releases)](https://github.com/harvester/harvester/releases)
+- [Harvester Intro and Setup — includes VM deployment](https://www.suse.com/c/rancher_blog/harvester-intro-and-setup/)
 
-### Videos, Blogs, Walkthroughs, etc...
+### Videos, Blogs, and Walkthroughs
 
-[Harvester + Kasm - GPU Passthrough](https://www.youtube.com/watch?v=3tMfc0fUvk4)  
-[Kasm Technologies and Rancher Government Solutions Partner to Deliver Enterprise-Class Kubernetes-Powered VDI](https://www3-develop.kasmweb.com/alliance-partnership/rancher-government-solutions)  
-
-[Three Easy-Mode Ways of Installing Rancher onto Harvester](https://ranchergovernment.com/blog/three-easy-mode-ways-of-installing-rancher-onto-harvester)
-
-[Rancher Federal Support](https://support.rancherfederal.com/hc/en-us)  
+- [Harvester + Kasm — GPU Passthrough (YouTube)](https://www.youtube.com/watch?v=3tMfc0fUvk4)
+- [Kasm + RGS Partnership — Enterprise Kubernetes-Powered VDI](https://www3-develop.kasmweb.com/alliance-partnership/rancher-government-solutions)
+- [Three Easy-Mode Ways of Installing Rancher onto Harvester](https://ranchergovernment.com/blog/three-easy-mode-ways-of-installing-rancher-onto-harvester)
+- [Rancher Federal Support Portal](https://support.rancherfederal.com/hc/en-us)
 
