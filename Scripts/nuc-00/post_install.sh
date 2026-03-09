@@ -9,6 +9,21 @@ echo | ssh-keygen -trsa -b2048 -N '' -f ~/.ssh/id_rsa-kubernerdes
 MYUSER=$(whoami)
 echo "$MYUSER ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/$MYUSER-sudo
 
+cat << EOF >> ~${MYUSER}/.bashrc
+
+# User specific aliases and functions
+if [ -d ~/.bashrc.d ]; then
+  for rc in ~/.bashrc.d/*; do
+  if [ -f "$rc" ]; then
+    [ ! -z $TROUBLESHOOT_BASH ] && { echo "### Sourcing: $rc from ~/.bashrc"; }
+    . "$rc"
+    fi
+  done
+fi
+unset rc
+
+EOF
+
 # Task: disable power-saving
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
 
