@@ -1,11 +1,12 @@
-# README
+# Scripts
 
-Note:  a lot of these "scripts" are simply commands to be run, but they are not scripts in the sense that you would just run them.  This is/was an intentional decision - some things are fairly difficult to make programatic - additionally, I think there is value in clickOps and cut-and-paste of commands and reviewing output while learning this platform.
+Many of these "scripts" are actually sequences of commands meant to be run interactively — not executed blindly. This is intentional: some operations are difficult to fully automate, and there is real value in stepping through commands manually and reviewing the output while learning the platform.
 
-## Script Naming
-The scripts have **some** rhyme/reason as to naming convention.
+## Naming Convention
 
-* no number = just a generic script to execute
-* 1x_task_name = Day 1
-* 2x_task_name = Day 2
-* Xx_task_name = Run as needed
+| Prefix | Meaning |
+|:-------|:--------|
+| *(none)* | General-purpose utility script |
+| `1x_` | Day 1 — initial build tasks |
+| `2x_` | Day 2 — operational tasks |
+| `Xx_` | Run as needed |

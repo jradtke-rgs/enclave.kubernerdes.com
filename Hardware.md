@@ -1,4 +1,6 @@
-# Hardware
+# Hardware Inventory
+
+This page documents the physical hardware, bill of materials, and network switch layout for the Kubernerdes Enclave.
 
 ## Systems
 
@@ -11,7 +13,7 @@
 
 ## Bill of Materials (BOM)
 
-An inventory of "what goes in the case" 
+An inventory of everything that goes in the case.
 
 | Total | Unit Cost | Qty | Object |
 |------:|----------:|:---:|:-------|
@@ -35,7 +37,7 @@ An inventory of "what goes in the case"
 
 ## Switch Layout
 
-Network port connection layout (unmanaged switch)
+Network port assignments on the unmanaged switch.
 
 | Port | Host     | Purpose | Port | Host       | Purpose |
 |:--:|:-----------|:--------|:----:|:-----------|:----|

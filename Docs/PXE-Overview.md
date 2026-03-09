@@ -1,22 +1,18 @@
 # PXE Overview
 
-## Status
-This doc is a work in progress.
+> **Status:** Work in progress.
 
-## 
+This is not a PXE how-to guide — there are plenty of those available already. Instead, this documents how PXE is configured in this specific enclave environment to support network-based installation of the Harvester nodes.
 
-This is not a guide or how-to for PXE (there are TONS available already).  I am reviewing this here to explain how I am setting it up for this enclave environmnet to allow network installation of the Harvester Nodes.
+### Nodes involved in the PXE boot flow:
 
-
-There are 3 nodes in this simple explanation:
-
-* client (the node which Harvester will be installed on - and technically there would be 3 of these)
-* http server (10.10.12.10 - the server which provides content (ISO/config files) via HTTP) 
-* dhcp/tftp server (10.10.12.8 - the server which provides PXE services consisting of DHCP, then TFTP)
+* **Client** — the target node where Harvester will be installed (there are 3 in this environment)
+* **HTTP Server** (`10.10.12.10`) — serves content (ISO, config files) over HTTP
+* **DHCP/TFTP Server** (`10.10.12.8`) — provides PXE boot services (DHCP for IP assignment, then TFTP for boot files)
 
 ![PXE-Overview](../Images/PXE-Overview.png)
 
-NOTE:  I provide a path to the ipxe-menu (in the image above) which is not entirely congruent with the actual location in the config files.  This was primarily just to save space in the visualization.  
+> **Note:** The paths shown in the diagram above are simplified for readability. The actual file locations differ slightly, as shown in the table below.
 
 | Image Reference | Actual Path/Location |
 |:----------------|:---------------------|

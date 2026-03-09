@@ -1,52 +1,58 @@
 # Demo Walkthrough
 
-# Prerequisites
+A guided walkthrough for deploying Harvester and standing up the initial environment. This covers the core installation, post-deployment configuration, and optional Rancher Manager integration.
 
-| Item | Purpose/Reason |
-|:-----|:---------------| 
-| VIP | The IP used for Harvester UI |
-| IPs | Each node needs an IP address - I prefer to use static |
-| DHCP | (optional) |
-| DNS | You should have a working DNS environment - we need the IPs of the DNS Servers |
-| Harvester Image | You can find the community bits at Github (link below), or pull from Carbide |
-| Cloud Images | Download from vendor, or create your own (typically for Windows VMs) |
-| Password | to login to hosts, either at the console, or ssh |
-| Cluster Token | common phrase for nodes to join Harvester Cluster |
+## Prerequisites
 
-# Deployment 
+| Item | Purpose |
+|:-----|:--------|
+| VIP | Virtual IP address for the Harvester UI |
+| IPs | One static IP per node (recommended over DHCP) |
+| DHCP | Optional — only needed if not using static IPs |
+| DNS | Working DNS environment; you'll need the DNS server IPs |
+| Harvester Image | Community ISO from [GitHub Releases](https://github.com/harvester/harvester/releases), or pulled via Carbide |
+| Cloud Images | Vendor-provided QCOW2 images, or custom-built (typically for Windows VMs) |
+| Password | Credentials for console and SSH access to hosts |
+| Cluster Token | Shared passphrase used by nodes to join the Harvester cluster |
 
-## Harvester
+## Deployment
 
-- Deploy node using USB boot
-  - (we will briefly cover PXE boot)
+### Harvester Installation
 
-# Post-Deploy
+- Deploy nodes using USB boot
+  - PXE boot is also supported — see the [PXE Overview](./Docs/PXE-Overview.md)
 
-- Login to Harvester UI (set password)
-- Download Kubeconfig for Harvester
-- Create Networking for Virtual Machines
-  - create Cluster Network Configuration (similar to vSphere Distributed Switch vDS) - must be same on all nodes
-  - create Network Configuration (select the nodes and assign the uplink)
-  - create a Virtual Machine Network (assign the Cluster Network to use, and select Type
-    - L2VLanNetwork (and assign VlanID)
-    - UntaggedNetwork (bridged to physical)
-    - OverlayNetwork (Host-only networking)
-- Create Namespace for VMs (this is a personal preference)
-- Upload Cloud Image (QCOW2)
-- Deploy a VM in to Namespace
+## Post-Deployment Configuration
 
-# Extra-curricular (if time permits)
+1. Log in to the Harvester UI and set the admin password
+2. Download the Kubeconfig for the Harvester cluster
+3. **Configure networking for Virtual Machines:**
+   - Create a **Cluster Network** (similar to a vSphere Distributed Switch) — must be consistent across all nodes
+   - Create a **Network Configuration** — select nodes and assign the uplink interface
+   - Create a **VM Network** — assign the Cluster Network and choose a type:
+     - `L2VlanNetwork` — tagged VLAN traffic (specify VLAN ID)
+     - `UntaggedNetwork` — bridged directly to the physical network
+     - `OverlayNetwork` — host-only / isolated networking
+4. Create a namespace for VMs (optional, but recommended for organization)
+5. Upload a cloud image (QCOW2 format)
+6. Deploy a VM into the namespace
 
-- Walkthrough of Rancher Manager integration
+## Extra Credit (if time permits)
 
-# Airgap Install
+- Walkthrough of Rancher Manager integration with Harvester
 
-- Carbide Portal - access software from RGS
-- hauler - tool for pulling down software assets for distribution in airgap
+## Airgap Installation
 
-# Links
-## Demo Hosts and UI
-[harvester UI](http://harvester.homelab.kubernerdes.com)  
-[Rancher UI](http://rancher.homelab.kubernerdes.com)  
- 
-for references and guidance links, see [README](./README.md) 
+- **Carbide Portal** — access and download software from RGS
+- **Hauler** — CLI tool for pulling and packaging software assets for air-gapped distribution
+
+---
+
+## Demo Links
+
+| Resource | URL |
+|:---------|:----|
+| Harvester UI | http://harvester.homelab.kubernerdes.com |
+| Rancher UI | http://rancher.homelab.kubernerdes.com |
+
+For additional references, see the [README](./README.md).
