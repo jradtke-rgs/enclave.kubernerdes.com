@@ -1,5 +1,5 @@
+#cloud-config
 ---
-
 # SL-Micro 6.1 Cloud-Init Configuration - User Data
 # Note: SL-Micro is an immutable OS, so some configurations require special handling
 
