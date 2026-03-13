@@ -1,0 +1,77 @@
+#cloud-config
+---
+# SL-Micro 6.1 Cloud-Init Configuration - Network Data
+# Uses NetworkManager (default on SL-Micro 6) to assign static IPs
+# based on the VM's hostname.
+
+runcmd:
+  - |
+    #!/bin/bash
+    set -euo pipefail
+
+    # --- Configuration ---
+    GATEWAY="10.10.12.1"
+    DNS_SERVERS="10.10.12.8 10.10.12.9 8.8.8.8"
+    DNS_DOMAIN="enclave.kubernerdes.com"
+    LOG_FILE="/var/log/static-ip-setup.log"
+
+    # --- Hostname-to-IP Map ---
+    HOSTNAME=$(cat /etc/hostname 2>/dev/null || hostname)
+
+    case "$HOSTNAME" in
+      harvester-edge-lb)  IPADDR="10.10.12.91/22"  ;;
+      harvester-dc-lb)    IPADDR="10.10.12.92/22"  ;;
+      rancher-01)         IPADDR="10.10.12.211/22" ;;
+      rancher-02)         IPADDR="10.10.12.212/22" ;;
+      rancher-03)         IPADDR="10.10.12.213/22" ;;
+      observability-01)   IPADDR="10.10.12.221/22" ;;
+      observability-02)   IPADDR="10.10.12.222/22" ;;
+      observability-03)   IPADDR="10.10.12.223/22" ;;
+      *)
+        echo "$(date): Unknown hostname '$HOSTNAME' - skipping static IP" | tee -a "$LOG_FILE"
+        exit 0
+        ;;
+    esac
+
+    # --- Apply Static IP ---
+    echo "========================================" | tee -a "$LOG_FILE"
+    echo "$(date): Configuring static IP for $HOSTNAME" | tee -a "$LOG_FILE"
+    echo "Target IP: $IPADDR" | tee -a "$LOG_FILE"
+
+    IFACE=$(ip route | grep default | awk '{print $5}' | head -n1)
+    if [ -z "$IFACE" ]; then
+      echo "ERROR: No network interface found" | tee -a "$LOG_FILE"
+      exit 1
+    fi
+    echo "Interface: $IFACE" | tee -a "$LOG_FILE"
+
+    # Disable cloud-init network config to prevent conflicts on reboot
+    mkdir -p /etc/cloud/cloud.cfg.d
+    cat > /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg <<INNEREOF
+    network: {config: disabled}
+    INNEREOF
+
+    # Parse CIDR
+    IP_ONLY=${IPADDR%/*}
+    PREFIX=${IPADDR#*/}
+
+    # Find and replace the active connection
+    CONN_NAME=$(nmcli -t -f NAME,DEVICE connection show --active | grep "$IFACE" | cut -d: -f1)
+    CONN_NAME=${CONN_NAME:-$IFACE}
+
+    nmcli connection delete "$CONN_NAME" 2>/dev/null || true
+    nmcli connection add type ethernet \
+      con-name "$CONN_NAME" \
+      ifname "$IFACE" \
+      ipv4.method manual \
+      ipv4.addresses "$IP_ONLY/$PREFIX" \
+      ipv4.gateway "$GATEWAY" \
+      ipv4.dns "$DNS_SERVERS" \
+      ipv4.dns-search "$DNS_DOMAIN" \
+      connection.autoconnect yes
+
+    nmcli connection up "$CONN_NAME"
+
+    echo "$(date): Configured $IFACE with $IPADDR" | tee -a "$LOG_FILE"
+    ip addr show "$IFACE" | tee -a "$LOG_FILE"
+    echo "========================================" | tee -a "$LOG_FILE"
