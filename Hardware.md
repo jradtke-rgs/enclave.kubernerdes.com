@@ -33,7 +33,8 @@ An inventory of everything that goes in the case.
 | $99   | $99  | 1   | [Beryl AX (GL-MT3000) Travel Router](https://store-us.gl-inet.com/collections/travel-routers/products/beryl-ax-gl-mt3000-pocket-sized-wi-fi-6-wireless-travel-gigabit-router) |
 | $279  | $279 | 1   | [Ubiquiti - USW-PRO-MAX-16](https://store.ui.com/us/en/category/switching-professional-max-xg/products/usw-pro-max-16) |
 | $200  | $200 | 1   | [NICGIGA 16-port 1gb Network Switch](https://www.nicgiga.com/products/16-port-2-5g-%E2%9E%95-2-port-10g-sfp-ethernet-switch-nicgiga-18-port-2-5gb-network-switch-unmanaged-plug-play-desktop-or-19-inch-rack-mount-fanless-metal-design) |
-| **$4,569** | | | **Estimated Total** |
+| $126  | $126 | 1   | [Pelican Vault 525 w/ Foam](https://www.amazon.com/dp/B09484BQBJ) |
+| **$4,695** | | | **Estimated Total** |
 
 ## Switch Layout
 
