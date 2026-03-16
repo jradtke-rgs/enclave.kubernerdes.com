@@ -50,8 +50,10 @@ echo “Cluster-IP Range: $(kubectl cluster-info dump | grep -m 1 service-cluste
 ### PXE Boot Traffic Capture
 
 ```bash
+ sudo tcpdump -i eth0 -n -vv port 67 or port 68 or port 69 or port 80 and host 10.10.12.101 or host 10.10.12.102 or host 10.10.12.103
+
 tcpdump -i <interface> -n -vv \
-  ‘(port 67 or port 68 or port 69 or port 80) and (host 10.10.12.101 or host 10.10.12.102 or host 10.10.12.111)’ \
+ sudo tcpdump -i eth0 -n -vv port 67 or port 68 or port 69 or port 80 and host 10.10.12.101 or host 10.10.12.102 or host 10.10.12.103 \
   -w /tmp/pxe-boot.pcap
 tail -f /var/log/apache2/access_log
 ```
