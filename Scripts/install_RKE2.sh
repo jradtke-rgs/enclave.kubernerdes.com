@@ -5,6 +5,8 @@
 
 # ssh-key for rancher should exist (if you deployed VM on Harvester)
 
+for NODE in $(seq 1 3); do ssh-keygen -R rancher-0${NODE} -f /home/mansible/.ssh/known_hosts; done
+
 # SU to root
 sudo su -
 
@@ -101,7 +103,7 @@ case $NAME in
   SL-Micro)
     case $(uname -n) in
       *-01) SLEEPY_TIME=5; sleep $SLEEPY_TIME ;;
-      *) SLEEPY_TIME=$(shuf -i 60-90 -n 1;) sleep $SLEEPY_TIME ;;
+      *) SLEEPY_TIME=$(shuf -i 30-45 -n 1;) sleep $SLEEPY_TIME ;;
     esac
     echo "Shutting down to ensure transactional update is committed" && shutdown now -r
   ;;
