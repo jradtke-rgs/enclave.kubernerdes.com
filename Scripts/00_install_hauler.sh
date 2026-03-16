@@ -47,6 +47,10 @@ alias HAULER_LOGIN="$(which hauler) login \$HAULER_SOURCE_REPO_URL -u \$HAULER_U
 EOF
 . $CREDS_FILE
 
+HAULER_LOGIN
+
+
+## HAULER SYNC STORE STUFF FOLLOWS THIS
 [ ! -d /srv/www/htdocs/hauler/store ] && sudo mkdir -p /srv/www/htdocs/hauler/store 
 
 # https://rancherfederal.github.io/carbide-docs/docs/registry-docs/downloading-images
