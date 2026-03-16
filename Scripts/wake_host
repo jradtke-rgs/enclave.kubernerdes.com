@@ -6,6 +6,7 @@ Usage: ./wake_host <hostname|all>
 
 import socket
 import sys
+import time
 
 # Hostname to MAC address lookup table
 HOSTS = {
@@ -17,6 +18,7 @@ HOSTS = {
 
 BROADCAST_IP = "255.255.255.255"
 WOL_PORT = 9
+INTER_HOST_DELAY = 20  # seconds to wait between sending WOL packets to each host
 
 
 def create_magic_packet(mac_address: str) -> bytes:
@@ -55,9 +57,13 @@ def wake_host(hostname: str) -> None:
 
 def wake_all() -> None:
     """Wake all hosts in the lookup table."""
-    print(f"Waking {len(HOSTS)} host(s)...")
-    for hostname, mac in sorted(HOSTS.items()):
+    hosts = sorted(HOSTS.items())
+    print(f"Waking {len(hosts)} host(s)...")
+    for i, (hostname, mac) in enumerate(hosts):
         send_wol(mac, hostname)
+        if i < len(hosts) - 1:
+            print(f"Waiting {INTER_HOST_DELAY}s before next host...")
+            time.sleep(INTER_HOST_DELAY)
 
 
 def list_hosts() -> None:
