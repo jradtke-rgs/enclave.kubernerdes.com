@@ -6,8 +6,8 @@
 # SUSE Security (NeuVector) on the "applications" cluster
 # SSH:   ssh -i ~/.ssh/id_rsa-kubernerdes sles@<IP>
 
+# Configure correct K8s cluster
 export KUBECONFIG=~/.kube/enclave-applications.kubeconfig
-
 
 #######################################
 # CVE Comparison: Community vs Carbide

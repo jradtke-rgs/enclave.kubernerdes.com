@@ -2,9 +2,7 @@
 # Reference: https://open-docs.neuvector.com/deploying/kubernetes
 # Reference: https://ranchermanager.docs.rancher.com/integrations-in-rancher/neuvector
 
-# SUSE Security (NeuVector) on the "applications" cluster
-# Nodes: 10.10.15.43 10.10.15.44 10.10.15.45
-# SSH:   ssh -i ~/.ssh/id_rsa-kubernerdes sles@10.10.15.43
+# Deply RGS Security (NeuVector) on the "applications" cluster
 
 export KUBECONFIG=~/.kube/enclave-applications.kubeconfig
 

@@ -1,7 +1,7 @@
 $TTL 604800 
 $ORIGIN enclave.kubernerdes.com. 
 @	IN SOA      kubernerd.kubernerdes.com.  root.kubernerdes.com. ( 
-            2026030601 ; Serial
+            2026031601 ; Serial
             604800     ; Refresh
             86400      ; Retry
             2419200    ; Expire
@@ -321,4 +321,5 @@ vpn-dhcp-254	 IN	 A	 10.10.15.254
 ; Application Wildcard Endpoints
 *.applications.enclave.kubernerdes.com. 	IN 	A 	10.10.12.230
 
-
+; Docs hosted at github pages
+docs.enclave.kubernerdes.com.   IN      CNAME   jradtke-rgs.github.io.
