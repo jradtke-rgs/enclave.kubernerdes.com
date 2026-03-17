@@ -1,34 +1,23 @@
+#!/bin/bash
+#
+# Deploy miscellaneous applications to the enclave applications cluster
+#
 
-## ADD GIT CLONE, CD, etc...
+set -euo pipefail
 
-##t Then...
-# Create namespace
-KUBECONFIG=~/.kube/enclave-applications.kubeconfig kubectl create namespace hexgl
-# Deploy
-KUBECONFIG=~/.kube/enclave-applications.kubeconfig kubectl apply -k k8s/overlays/example
+KUBECONFIG="${KUBECONFIG:-~/.kube/enclave-applications.kubeconfig}"
+export KUBECONFIG
 
-cat << EOF > ingress-hexgl.yaml
---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: hexgl
-  namespace: hexgl
-  annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "0"
-spec:
-  ingressClassName: nginx
-  rules:
-    - host: hexgl.applications.enclave.kubernerdes.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: hexgl
-                port:
-                  number: 80
-EOF 
+##############################################################################
+# HexGL — futuristic WebGL racing game
+##############################################################################
 
-kubectl apply -f ingress-hexgl.yaml
+echo "=== Deploying HexGL ==="
+
+HEXGL_TMP="$(mktemp -d)"
+trap 'rm -rf "$HEXGL_TMP"' EXIT
+
+echo "Cloning HexGL repo..."
+git clone --depth=1 https://github.com/jradtke-rgs/HexGL "$HEXGL_TMP"
+
+bash "$HEXGL_TMP/scripts/deploy.sh" -k "$KUBECONFIG" -o example
