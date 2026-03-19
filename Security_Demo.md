@@ -1,5 +1,11 @@
 # RGS Security (NeuVector) Demo Walkthrough: Monitor → Protect Mode
 
+## Status
+This demo guide is still a work in progress.  Technically everything works - still need to build the order of operations and "tighten up" what you click on, and what you will see for names, etc..
+
+TODO: ensure the path demonstrates the capability in way that is easy to recognize
+
+
 ## Overview
 
 This walkthrough guides you through a live demonstration of SUSE Security (NeuVector) using a running container in the `aperture-sci` namespace. You'll observe network behavior in Monitor mode, then flip to Protect mode and witness real-time enforcement blocking unauthorized connections.
@@ -51,15 +57,15 @@ Navigate to **Policy** → **Network Rules** and filter to the `aperture-sci` na
 
 You should see NeuVector has auto-discovered and documented:
 
-- **Source:** `chell-test` (aperture-sci namespace)
-- **Destination:** `www.fastly.com` (external)
-- **Protocol:** HTTPS / TCP 443
+- **Source:** `nv.chell-test.aperture-sci` (aperture-sci namespace)
+- **Destination:** `(external)`
+- **Applications:** SSL **Ports** ANy
 
 > 🎯 **Key talking point:** This is NeuVector's *behavioral baseline*. In Monitor mode, it's building a model of "what normal looks like" for this workload. Every connection gets catalogued. When you switch to Protect mode, anything that deviates from this baseline becomes a candidate for enforcement.
 
 ### Step 4 — Observe the Live Security Events
 
-Go to **Notifications** → **Security Events**. You may see informational events being logged for the outbound connections. Notice that in Monitor mode, these are recorded but the traffic flows freely.
+Go to **Notifications** → **Security Events**. You may see informational events being logged for the outbound connections. Notice that in Monitor mode, these are recorded but the traffic flows freely.  At this point, however, we will see no notifications for our chell-test workload
 
 > 🎯 **Key talking point:** Your security team gets visibility without disrupting the application. This is how you build confidence before enforcing — you watch first, then act.
 
@@ -90,7 +96,7 @@ Give it 10–15 seconds. The `chell-test` container's existing curl loop to `www
 You can verify by watching the logs:
 
 ```bash
-kubectl logs -f chell-test -n aperture-sci
+kubectl logs -f $(kubectl get pods -n aperture-sci -o custom-columns=":metadata.name" --no-headers) -n aperture-sci
 ```
 
 You should continue to see output like:
@@ -110,10 +116,30 @@ You should continue to see output like:
 Now you'll attempt connections that were never part of the learned baseline.
 
 ```bash
-kubectl exec -it chell-test -n aperture-sci -- /bin/sh
+kubectl exec -it $(kubectl get pods -n aperture-sci -o custom-columns=":metadata.name" --no-headers) -n aperture-sci -- /bin/sh
+```
+And you will see
+```
+~ # command terminated with exit code 137
 ```
 
-You should get a shell prompt inside the container.
+Hmmm... let's try /bin/bash
+```
+kubectl exec -it $(kubectl get pods -n aperture-sci -o custom-columns=":metadata.name" --no-headers) -n aperture-sci -- /bin/bash
+command terminated with exit code 137
+```
+
+This is actually expected.  Browse to Notifications | Security Events
+
+You should now see a few entries - 1 for /bin/sh and 1 for /bin/bash.  Click on "Rewrite Rule" - the dialogue presents a warning with a red background.  Review the warning and then click "Deploy"
+
+And... let's try again to get a shell
+```
+kubectl exec -it $(kubectl get pods -n aperture-sci -o custom-columns=":metadata.name" --no-headers) -n aperture-sci -- /bin/sh
+~ #
+```
+
+Huzzah!  You should get a shell prompt inside the container.
 
 ### Step 8 — Attempt an Unauthorized Connection (curl to google.com)
 
@@ -126,10 +152,10 @@ curl google.com
 **Expected result:** The connection is **blocked**. You'll see either a connection timeout, connection refused, or an immediate failure — NeuVector's enforcement engine drops the packet before it leaves the container's network namespace.
 
 ```
-curl: (6) Could not resolve host: google.com
-# or
-curl: (7) Failed to connect to google.com port 80
+Killed
 ```
+
+Refresh your view in Notifications | Security Events
 
 > 🎯 **Key talking point:** `google.com` was never part of this container's learned behavior. NeuVector has no rule permitting it, so in Protect mode it doesn't get through — full stop. This is east-west and north-south enforcement at the container level, not at the perimeter.
 
