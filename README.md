@@ -57,9 +57,10 @@ Eventually this repo will be the technical steps and there will be an associated
 - Deploy a K8s cluster (`applications`) via RMS using SL-Micro + RKE2
 - Install **RGS Security** (NeuVector) on the `applications` cluster
 - Deploy community vs. Carbide images side-by-side for comparison in NeuVector
+- Deploy test app to demonstrate **RGS Security** capability of monitor vs protect mode
 - Enable monitoring, explore Grafana dashboards
-- Integrate with external systems and configure RBAC
-- Deploy updates via Fleet
+- Integrate with external systems and configure RBAC [TBD]
+- Deploy updates via Fleet [TBD]
 
 ---
 
