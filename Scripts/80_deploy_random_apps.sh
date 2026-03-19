@@ -33,13 +33,13 @@ kubectl apply -f - <<'EOF'
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: aperature-sci
+  name: aperture-sci
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: chell-test
-  namespace: aperature-sci
+  namespace: aperture-sci
   labels:
     app: chell-test
 spec:
@@ -64,6 +64,6 @@ spec:
               done
 EOF
 
-echo "chell-test deployed to namespace aperature-sci"
+echo "chell-test deployed to namespace aperture-sci"
 echo "be sure to remove/delete later"
-echo "kubectl delete namespace aperature-sci"
+echo "kubectl delete namespace aperture-sci"
