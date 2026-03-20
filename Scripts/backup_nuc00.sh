@@ -96,7 +96,7 @@ else
       fi
       DEST="${MOUNT_POINT}${DISK_PATH}"
       log "Copying $DISK_PATH → $DEST"
-      rsync -ahR --info=progress2 "$DISK_PATH" "$MOUNT_POINT/"
+      rsync -ahRS --info=progress2 "$DISK_PATH" "$MOUNT_POINT/"
     done < <(virsh domblklist "$VM" --details | awk '$2=="disk" {print $4}')
 
     # Restart only if it was running before
@@ -111,7 +111,7 @@ fi
 
 # ── 4. Back up /srv/www ───────────────────────────────────────────────────────
 log "Syncing $WWW_DIR → ${MOUNT_POINT}${WWW_DIR}"
-rsync -ahR --info=progress2 --delete "$WWW_DIR/" "$MOUNT_POINT/"
+rsync -ahRS --info=progress2 --delete "$WWW_DIR/" "$MOUNT_POINT/"
 
 log "════════════════════════════════════════════════"
 log "Backup complete → $MOUNT_POINT"
