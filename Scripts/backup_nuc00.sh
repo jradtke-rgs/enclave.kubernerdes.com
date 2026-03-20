@@ -131,7 +131,8 @@ else
 
     log "$VM backup complete"
   done
-fi # BACKUP_VMS
+fi # inner: VMs found
+fi # outer: BACKUP_VMS
 
 # ── 4. Back up /srv/www ───────────────────────────────────────────────────────
 log "Syncing $WWW_DIR → ${MOUNT_POINT}${WWW_DIR}"
