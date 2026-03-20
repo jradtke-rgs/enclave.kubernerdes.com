@@ -13,6 +13,27 @@ LOG_PREFIX="[backup_nuc00]"
 log() { echo "$LOG_PREFIX $(date '+%F %T') $*"; }
 die() { log "ERROR: $*" >&2; exit 1; }
 
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") [--vms]
+
+  --vms    Also back up libvirt VM disk images (default: skip VM backup)
+
+Without --vms, only /srv/www is backed up.
+EOF
+  exit 1
+}
+
+# ── Parse arguments ───────────────────────────────────────────────────────────
+BACKUP_VMS=false
+for arg in "$@"; do
+  case "$arg" in
+    --vms) BACKUP_VMS=true ;;
+    -h|--help) usage ;;
+    *) die "Unknown option: $arg"; usage ;;
+  esac
+done
+
 # ── 1. Ensure running on nuc-00 ───────────────────────────────────────────────
 [[ "$(hostname -s)" == "$HOSTNAME_REQUIRED" ]] \
   || die "Must run on ${HOSTNAME_REQUIRED} (current host: $(hostname -s))"
@@ -49,6 +70,9 @@ trap cleanup EXIT
 log "Backup destination root: $MOUNT_POINT (paths mirrored from /)"
 
 # ── 3. Back up each VM ────────────────────────────────────────────────────────
+if [[ "$BACKUP_VMS" == false ]]; then
+  log "Skipping VM backup (use --vms to enable)"
+else
 
 mapfile -t VMS < <(virsh list --all --name | grep -v '^[[:space:]]*$')
 
@@ -107,7 +131,7 @@ else
 
     log "$VM backup complete"
   done
-fi
+fi # BACKUP_VMS
 
 # ── 4. Back up /srv/www ───────────────────────────────────────────────────────
 log "Syncing $WWW_DIR → ${MOUNT_POINT}${WWW_DIR}"
