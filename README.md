@@ -16,7 +16,9 @@ This repository contains the architecture overview, scripts, and implementation 
 
 TODO: Add a table/matrix of things that have been migrated from community to carbide.
 
-Eventually this repo will be the technical steps and there will be an associated "docs" repo that provides the guidance and details of the tasks and steps provided here. [Documentation](https://github.com/jradtke-rgs/docs.enclave.kubernerdes.com/)
+Eventually this repo will be the technical steps and there will be an associated "docs" repo that provides the guidance and details of the tasks and steps provided here.  
+[Documentation Repo](https://github.com/jradtke-rgs/docs.enclave.kubernerdes.com/)   
+[Documentation Site - Rendered](https://jradtke-rgs.github.io/docs.enclave.kubernerdes.com/)  
 
 ## Goals
 
