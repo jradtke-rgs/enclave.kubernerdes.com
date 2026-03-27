@@ -8,13 +8,17 @@ set -euo pipefail
 #
 # What this does:
 #   1. Logs hauler into the Carbide Secured Registry (rgcrprod.azurecr.us)
-#   2. Syncs RGS products (Rancher, RKE2, NeuVector, Harvester) via --products
+#   2. Syncs each RGS product into its own store subdirectory
 #   3. Dynamically builds carbide-images.yaml from the published Carbide image list
-#   4. Syncs all remaining manifests (charts, images, files)
+#   4. Syncs all remaining manifests, each into a store named after the manifest file
 #
-# Store location: $HAULER_STORE_DIR (default: /root/hauler/store — 300 GB SSD partition)
-# Serve registry:   hauler store serve registry   (port 5000)
-# Serve fileserver: hauler store serve fileserver  (port 8080)
+# Each product gets its own store under HAULER_STORE_DIR, e.g.:
+#   /root/hauler/store/rancher
+#   /root/hauler/store/rke2
+#   /root/hauler/store/neuvector
+#   /root/hauler/store/harvester
+#
+# After sync: push each store to its corresponding Harbor project via hauler store copy.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MANIFEST_DIR="${SCRIPT_DIR}/hauler-manifests"
@@ -26,7 +30,7 @@ HAULER_STORE_DIR=/root/hauler/store
 RANCHER_VERSION="v2.13.3"
 RKE2_VERSION="v1.35.2+rke2r1"
 NEUVECTOR_VERSION="v5.4.9"
-HARVESTER_VERSION="v1.4.1"
+HARVESTER_VERSION="v1.7.1"
 PLATFORM="linux/amd64"
 
 CARBIDE_REGISTRY="rgcrprod.azurecr.us"
@@ -55,15 +59,35 @@ hauler login "${CARBIDE_REGISTRY}" \
   -p "${Carbide_Registry_Password}"
 
 # ---------------------------------------------------------------------------
-# Step 2 — Sync RGS products via --products shorthand
+# Step 2 — Sync each RGS product into its own store
 # ---------------------------------------------------------------------------
-echo "==> Syncing RGS Carbide products"
-PRODUCTS="rancher=${RANCHER_VERSION},rke2=${RKE2_VERSION},neuvector=${NEUVECTOR_VERSION},harvester=${HARVESTER_VERSION}"
+echo "==> Syncing rancher ${RANCHER_VERSION}"
 hauler store sync \
-  --products "${PRODUCTS}" \
+  --products "rancher=${RANCHER_VERSION}" \
   --platform "${PLATFORM}" \
   --product-registry "${CARBIDE_REGISTRY}" \
-  --store "${HAULER_STORE_DIR}"
+  --store "${HAULER_STORE_DIR}/rancher"
+
+echo "==> Syncing rke2 ${RKE2_VERSION}"
+hauler store sync \
+  --products "rke2=${RKE2_VERSION}" \
+  --platform "${PLATFORM}" \
+  --product-registry "${CARBIDE_REGISTRY}" \
+  --store "${HAULER_STORE_DIR}/rke2"
+
+echo "==> Syncing neuvector ${NEUVECTOR_VERSION}"
+hauler store sync \
+  --products "neuvector=${NEUVECTOR_VERSION}" \
+  --platform "${PLATFORM}" \
+  --product-registry "${CARBIDE_REGISTRY}" \
+  --store "${HAULER_STORE_DIR}/neuvector"
+
+echo "==> Syncing harvester ${HARVESTER_VERSION}"
+hauler store sync \
+  --products "harvester=${HARVESTER_VERSION}" \
+  --platform "${PLATFORM}" \
+  --product-registry "${CARBIDE_REGISTRY}" \
+  --store "${HAULER_STORE_DIR}/harvester"
 
 # ---------------------------------------------------------------------------
 # Step 3 — Build carbide-images.yaml dynamically from published image list
@@ -100,18 +124,19 @@ for MANIFEST in "${MANIFEST_DIR}"/*.yaml; do
     echo "    Skipping (empty): $(basename "${MANIFEST}")"
     continue
   fi
-  echo "    Syncing: $(basename "${MANIFEST}")"
+  # Derive store name from manifest filename (e.g. neuvector.yaml → .../neuvector)
+  STORE_NAME="$(basename "${MANIFEST}" .yaml)"
+  echo "    Syncing: $(basename "${MANIFEST}") → ${HAULER_STORE_DIR}/${STORE_NAME}"
   hauler store sync \
     --filename "${MANIFEST}" \
     --platform "${PLATFORM}" \
     --key "${HOME}/carbide-key.pub" \
-    --store "${HAULER_STORE_DIR}"
+    --store "${HAULER_STORE_DIR}/${STORE_NAME}"
 done
 
 echo
 echo "==> Hauler sync complete."
-echo "    Store location: ${HAULER_STORE_DIR:-/root/hauler/store}"
+echo "    Per-product stores under: ${HAULER_STORE_DIR}"
 echo
-echo "    To serve the store:"
-echo "      hauler store serve registry    # OCI registry  — port 5000"
-echo "      hauler store serve fileserver  # HTTP files    — port 8080"
+echo "    Next step: push each store to Harbor:"
+echo "      hauler store copy --store <store> registry://<harbor>/<project>"
