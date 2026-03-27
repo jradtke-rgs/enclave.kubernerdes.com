@@ -24,3 +24,6 @@ Scripts for managing LLM infrastructure on an NVIDIA DGX Spark (DGX OS / Ubuntu-
 - Scripts use `bash` with `set -euo pipefail`.
 - All services bind to `0.0.0.0` for LAN accessibility.
 - Docker volumes are prefixed with `llm-manager-` (e.g., `llm-manager-ollama`, `llm-manager-webui`).
+
+## Documentation
+When making significant changes to this repo, update the associated docs repo at `../docs.enclave.kubernerdes.com`.
