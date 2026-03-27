@@ -24,7 +24,7 @@ HARVESTER_WEB_DIR="${WEB_ROOT}/harvester"
 VERSION_DIR="${HARVESTER_WEB_DIR}/${HARVESTER_VERSION}"
 REPO_DIR="${WEB_ROOT}/enclave.kubernerdes.com"
 
-HAULER_STORE_DIR="${HAULER_STORE_DIR:-/srv/www/htdocs/hauler/store}"
+HAULER_STORE_DIR="${HAULER_STORE_DIR:-/root/hauler/store}"
 
 # ---------------------------------------------------------------------------
 # Step 1 — Export Harvester files from hauler store

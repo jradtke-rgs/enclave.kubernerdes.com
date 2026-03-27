@@ -53,7 +53,7 @@ echo "    hauler installed: $(hauler version 2>/dev/null | head -1)"
 # ---------------------------------------------------------------------------
 # Store lives on the 300 GB SSD partition mounted at /root.
 # Harbor (future) will be on the NVMe — keep hauler store here, separate.
-HAULER_STORE_DIR=/root/store
+HAULER_STORE_DIR=/root/hauler/store
 mkdir -p "${HAULER_STORE_DIR}"
 
 mkdir -p ~/.bashrc.d
