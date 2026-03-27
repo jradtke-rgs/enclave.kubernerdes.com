@@ -51,9 +51,9 @@ echo "    hauler installed: $(hauler version 2>/dev/null | head -1)"
 # ---------------------------------------------------------------------------
 # hauler environment — store location and shell helpers
 # ---------------------------------------------------------------------------
-# TODO: Verify HAULER_STORE_DIR is on the volume with the most available space
-#       before running this script. Run: df -h to check mount points.
-HAULER_STORE_DIR=/srv/www/htdocs/hauler/store
+# Store lives on the 300 GB SSD partition mounted at /root.
+# Harbor (future) will be on the NVMe — keep hauler store here, separate.
+HAULER_STORE_DIR=/root/store
 mkdir -p "${HAULER_STORE_DIR}"
 
 mkdir -p ~/.bashrc.d

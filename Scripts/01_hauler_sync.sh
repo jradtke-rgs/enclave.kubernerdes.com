@@ -12,7 +12,7 @@ set -euo pipefail
 #   3. Dynamically builds carbide-images.yaml from the published Carbide image list
 #   4. Syncs all remaining manifests (charts, images, files)
 #
-# Store location: $HAULER_STORE_DIR (default: /srv/www/htdocs/hauler/store)
+# Store location: $HAULER_STORE_DIR (default: /root/store — 300 GB SSD partition)
 # Serve registry:   hauler store serve registry   (port 5000)
 # Serve fileserver: hauler store serve fileserver  (port 8080)
 
@@ -107,7 +107,7 @@ done
 
 echo
 echo "==> Hauler sync complete."
-echo "    Store location: ${HAULER_STORE_DIR:-/srv/www/htdocs/hauler/store}"
+echo "    Store location: ${HAULER_STORE_DIR:-/root/store}"
 echo
 echo "    To serve the store:"
 echo "      hauler store serve registry    # OCI registry  — port 5000"
