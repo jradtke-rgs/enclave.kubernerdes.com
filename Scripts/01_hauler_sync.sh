@@ -67,7 +67,7 @@ hauler store sync \
 # Step 3 — Build carbide-images.yaml dynamically from published image list
 # ---------------------------------------------------------------------------
 echo "==> Fetching Carbide public key"
-curl -sfOL "${CARBIDE_KEY_URL}"
+curl -sfL "${CARBIDE_KEY_URL}" -o "${HOME}/carbide-key.pub"
 
 echo "==> Building ${MANIFEST_DIR}/carbide-images.yaml from Carbide image list"
 CARBIDE_IMAGE_LIST=$(curl -sfL "${CARBIDE_IMAGES_URL}" | sed '/nats/d')
@@ -102,7 +102,7 @@ for MANIFEST in "${MANIFEST_DIR}"/*.yaml; do
   hauler store sync \
     --filename "${MANIFEST}" \
     --platform "${PLATFORM}" \
-    --key carbide-key.pub
+    --key "${HOME}/carbide-key.pub"
 done
 
 echo
