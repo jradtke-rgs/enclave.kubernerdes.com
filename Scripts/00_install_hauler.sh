@@ -25,28 +25,36 @@ COSIGN_BINARY=cosign-linux-amd64
 TMPDIR="$(mktemp -d)"
 trap "rm -rf ${TMPDIR}" EXIT
 
-echo "==> Installing cosign"
-curl -fsSL -o "${TMPDIR}/${COSIGN_BINARY}" \
-  "https://github.com/sigstore/cosign/releases/latest/download/${COSIGN_BINARY}"
-curl -fsSL -o "${TMPDIR}/cosign_checksums.txt" \
-  "https://github.com/sigstore/cosign/releases/latest/download/cosign_checksums.txt"
+if command -v cosign &>/dev/null; then
+  echo "==> cosign already installed: $(cosign version 2>/dev/null | head -1) — skipping"
+else
+  echo "==> Installing cosign"
+  curl -fsSL -o "${TMPDIR}/${COSIGN_BINARY}" \
+    "https://github.com/sigstore/cosign/releases/latest/download/${COSIGN_BINARY}"
+  curl -fsSL -o "${TMPDIR}/cosign_checksums.txt" \
+    "https://github.com/sigstore/cosign/releases/latest/download/cosign_checksums.txt"
 
-EXPECTED_HASH=$(grep -w "${COSIGN_BINARY}" "${TMPDIR}/cosign_checksums.txt" | awk '{print $1}')
-CALCULATED_HASH=$(sha256sum "${TMPDIR}/${COSIGN_BINARY}" | awk '{print $1}')
+  EXPECTED_HASH=$(grep -w "${COSIGN_BINARY}" "${TMPDIR}/cosign_checksums.txt" | awk '{print $1}')
+  CALCULATED_HASH=$(sha256sum "${TMPDIR}/${COSIGN_BINARY}" | awk '{print $1}')
 
-if [[ "${EXPECTED_HASH}" != "${CALCULATED_HASH}" ]]; then
-  echo "ERROR: cosign checksum mismatch. Aborting."
-  exit 1
+  if [[ "${EXPECTED_HASH}" != "${CALCULATED_HASH}" ]]; then
+    echo "ERROR: cosign checksum mismatch. Aborting."
+    exit 1
+  fi
+  install -m 0755 -o root "${TMPDIR}/${COSIGN_BINARY}" /usr/local/bin/cosign
+  echo "    cosign installed: $(cosign version 2>/dev/null | head -1)"
 fi
-install -m 0755 -o root "${TMPDIR}/${COSIGN_BINARY}" /usr/local/bin/cosign
-echo "    cosign installed: $(cosign version 2>/dev/null | head -1)"
 
 # ---------------------------------------------------------------------------
 # hauler
 # ---------------------------------------------------------------------------
-echo "==> Installing hauler"
-curl -sfL https://get.hauler.dev | bash
-echo "    hauler installed: $(hauler version 2>/dev/null | head -1)"
+if command -v hauler &>/dev/null; then
+  echo "==> hauler already installed: $(hauler version 2>/dev/null | head -1) — skipping"
+else
+  echo "==> Installing hauler"
+  curl -sfL https://get.hauler.dev | bash
+  echo "    hauler installed: $(hauler version 2>/dev/null | head -1)"
+fi
 
 # ---------------------------------------------------------------------------
 # hauler environment — store location and shell helpers
