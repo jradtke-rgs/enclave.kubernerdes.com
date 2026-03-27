@@ -3,7 +3,7 @@ set -euo pipefail
 
 # 10_setup_harvester_pxe.sh — Prepare admin node to PXE-boot Harvester
 #
-# Run on nuc-00 AFTER Scripts/00_hauler_sync.sh has completed.
+# Run on nuc-00 AFTER Scripts/01_hauler_sync.sh has completed.
 # This script extracts the Harvester boot files from the hauler store and
 # places them in the Apache web root so iPXE can load them.
 #

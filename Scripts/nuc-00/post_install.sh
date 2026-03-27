@@ -19,7 +19,7 @@
 #
 # NOTE: Hauler install and content sync are handled separately in:
 #   Scripts/00_install_hauler.sh
-#   Scripts/00_hauler_sync.sh
+#   Scripts/01_hauler_sync.sh
 
 # ---------------------------------------------------------------------------
 # 1. SSH key + sudo

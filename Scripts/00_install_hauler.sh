@@ -6,7 +6,7 @@ set -euo pipefail
 # Run this AFTER Scripts/nuc-00/post_install.sh.
 # Requires: Carbide credentials in ~/.bashrc.d/RGS (sourced below).
 #
-# After this script: run Scripts/00_hauler_sync.sh to populate the store.
+# After this script: run Scripts/01_hauler_sync.sh to populate the store.
 
 [ -f ~/.bashrc.d/RGS ] && source ~/.bashrc.d/RGS || {
   echo "ERROR: ~/.bashrc.d/RGS not found. Copy from Files/bashrc.d/RGS.template and fill in credentials."
@@ -65,4 +65,4 @@ hauler completion bash > ~/.bashrc.d/HAULER-completion
 echo
 echo "==> hauler setup complete."
 echo "    Store dir : ${HAULER_STORE_DIR}"
-echo "    Next step : source ~/.bashrc && run Scripts/00_hauler_sync.sh"
+echo "    Next step : source ~/.bashrc && run Scripts/01_hauler_sync.sh"
