@@ -62,7 +62,7 @@ PRODUCTS="rancher=${RANCHER_VERSION},rke2=${RKE2_VERSION},neuvector=${NEUVECTOR_
 hauler store sync \
   --products "${PRODUCTS}" \
   --platform "${PLATFORM}" \
-  --product-registry "${CARBIDE_REGISTRY}
+  --product-registry "${CARBIDE_REGISTRY} \
   --store ${HAULER_STORE_DIR}"
 
 # ---------------------------------------------------------------------------
