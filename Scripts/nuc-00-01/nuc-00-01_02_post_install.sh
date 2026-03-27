@@ -112,3 +112,41 @@ firewall-cmd --list-all
 #### #### ####
 ### Install Ansible (future use)
 zypper -n in ansible
+
+#### #### ####
+## nuc-00-02 specific: fail2ban + SSH hardening
+case $(uname -n) in
+  nuc-00-02)
+    # Install fail2ban
+    zypper --non-interactive in fail2ban
+
+    # Configure fail2ban jail for SSH (firewalld backend via rich rules)
+    cat > /etc/fail2ban/jail.d/sshd.conf <<'EOF'
+[sshd]
+enabled  = true
+port     = ssh
+filter   = sshd
+backend  = systemd
+maxretry = 5
+bantime  = 3600
+findtime = 600
+action   = firewallcmd-rich-rules[actiontype=<multiport>]
+EOF
+
+    systemctl enable fail2ban --now
+
+    # Harden SSH: key-based authentication only
+    sed -i \
+      -e 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' \
+      -e 's/^#\?PubkeyAuthentication.*/PubkeyAuthentication yes/' \
+      -e 's/^#\?ChallengeResponseAuthentication.*/ChallengeResponseAuthentication no/' \
+      -e 's/^#\?KbdInteractiveAuthentication.*/KbdInteractiveAuthentication no/' \
+      /etc/ssh/sshd_config
+
+    # Append directives if they were not present at all
+    grep -q '^PasswordAuthentication' /etc/ssh/sshd_config || echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config
+    grep -q '^PubkeyAuthentication'   /etc/ssh/sshd_config || echo 'PubkeyAuthentication yes'  >> /etc/ssh/sshd_config
+
+    systemctl restart sshd
+  ;;
+esac
