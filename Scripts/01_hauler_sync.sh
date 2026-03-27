@@ -18,6 +18,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MANIFEST_DIR="${SCRIPT_DIR}/hauler-manifests"
+HAULER_STORE_DIR=/root/hauler/store
 
 # ---------------------------------------------------------------------------
 # Versions — update these when upgrading
