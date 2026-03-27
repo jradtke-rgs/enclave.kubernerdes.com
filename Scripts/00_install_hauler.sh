@@ -80,4 +80,4 @@ hauler completion bash > ~/.bashrc.d/HAULER-completion
 echo
 echo "==> hauler setup complete."
 echo "    Store dir : ${HAULER_STORE_DIR}"
-echo "    Next step : source ~/.bashrc && run Scripts/01_hauler_sync.sh"
+echo "    Next step : source ~/.bashrc.d/RGS && run Scripts/01_hauler_sync.sh"
