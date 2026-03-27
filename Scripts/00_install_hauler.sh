@@ -3,10 +3,15 @@ set -euo pipefail
 
 # 00_install_hauler.sh — Install hauler and cosign on the admin node (nuc-00)
 #
-# Run this AFTER Scripts/nuc-00/post_install.sh.
+# Run as root, AFTER Scripts/nuc-00/post_install.sh.
 # Requires: Carbide credentials in ~/.bashrc.d/RGS (sourced below).
 #
 # After this script: run Scripts/01_hauler_sync.sh to populate the store.
+
+if [[ "$(id -u)" -ne 0 ]]; then
+  echo "ERROR: This script must be run as root."
+  exit 1
+fi
 
 [ -f ~/.bashrc.d/RGS ] && source ~/.bashrc.d/RGS || {
   echo "ERROR: ~/.bashrc.d/RGS not found. Copy from Files/bashrc.d/RGS.template and fill in credentials."
@@ -33,21 +38,23 @@ if [[ "${EXPECTED_HASH}" != "${CALCULATED_HASH}" ]]; then
   echo "ERROR: cosign checksum mismatch. Aborting."
   exit 1
 fi
-sudo install -m 0755 -o root "${TMPDIR}/${COSIGN_BINARY}" /usr/local/bin/cosign
+install -m 0755 -o root "${TMPDIR}/${COSIGN_BINARY}" /usr/local/bin/cosign
 echo "    cosign installed: $(cosign version 2>/dev/null | head -1)"
 
 # ---------------------------------------------------------------------------
 # hauler
 # ---------------------------------------------------------------------------
 echo "==> Installing hauler"
-curl -sfL https://get.hauler.dev | sudo bash
+curl -sfL https://get.hauler.dev | bash
 echo "    hauler installed: $(hauler version 2>/dev/null | head -1)"
 
 # ---------------------------------------------------------------------------
 # hauler environment — store location and shell helpers
 # ---------------------------------------------------------------------------
+# TODO: Verify HAULER_STORE_DIR is on the volume with the most available space
+#       before running this script. Run: df -h to check mount points.
 HAULER_STORE_DIR=/srv/www/htdocs/hauler/store
-sudo mkdir -p "${HAULER_STORE_DIR}"
+mkdir -p "${HAULER_STORE_DIR}"
 
 mkdir -p ~/.bashrc.d
 
