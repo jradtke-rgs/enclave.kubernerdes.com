@@ -1,24 +1,44 @@
-# This "script" was not intended to be run as a script, and instead cut-and-paste the pieces (hence no #!/bin/sh at the top ;-)
-# Reference: https://open-docs.neuvector.com/deploying/kubernetes
-# Reference: https://ranchermanager.docs.rancher.com/integrations-in-rancher/neuvector
+# 20_install_RGS_security.sh — Deploy RGS Security (NeuVector) on the apps cluster
+#
+# Not intended to be run as a script — cut and paste sections as needed.
+# Run from the admin node (nuc-00) with KUBECONFIG pointing to the
+# apps cluster.
+#
+# Prerequisites:
+#   - apps cluster deployed via Rancher Manager (3-node RKE2 on SL-Micro)
+#   - KUBECONFIG saved as ~/.kube/enclave-apps.kubeconfig
+#   - hauler store serving registry on port 5000
+#
+# Reference:
+#   https://open-docs.neuvector.com/deploying/kubernetes
+#   https://ranchermanager.docs.rancher.com/integrations-in-rancher/neuvector
 
-# Deply RGS Security (NeuVector) on the "applications" cluster
+INTERNAL_REGISTRY="10.10.12.10:5000"
+NEUVECTOR_VERSION="5.4.9"
+RANCHER_URL="https://rancher.enclave.kubernerdes.com"
 
-export KUBECONFIG=~/.kube/enclave-applications.kubeconfig
+export KUBECONFIG=~/.kube/enclave-apps.kubeconfig
+kubectl get nodes
 
-#######################################
-# Install SUSE Security (NeuVector)
-#######################################
-
-# Add the NeuVector Helm repo
-helm repo add neuvector https://neuvector.github.io/neuvector-helm/
-helm repo update
-
-# Create namespace
+# ---------------------------------------------------------------------------
+# NeuVector namespace and imagePullSecret for internal registry
+# ---------------------------------------------------------------------------
 kubectl create namespace cattle-neuvector-system
 
-# Install NeuVector via Helm
-helm upgrade --install neuvector neuvector/core \
+# If the hauler registry requires auth, create an imagePullSecret.
+# If hauler is serving unauthenticated (default), skip this.
+# kubectl create secret docker-registry carbide-registry \
+#   --namespace cattle-neuvector-system \
+#   --docker-server="${INTERNAL_REGISTRY}" \
+#   --docker-username="${Carbide_Registry_Username}" \
+#   --docker-password="${Carbide_Registry_Password}"
+
+# ---------------------------------------------------------------------------
+# Install NeuVector from hauler registry
+# ---------------------------------------------------------------------------
+helm upgrade --install neuvector \
+  oci://${INTERNAL_REGISTRY}/charts/core \
+  --version "${NEUVECTOR_VERSION}" \
   --namespace cattle-neuvector-system \
   --set manager.svc.type=ClusterIP \
   --set controller.replicas=3 \
@@ -26,15 +46,20 @@ helm upgrade --install neuvector neuvector/core \
   --set controller.pvc.enabled=false \
   --set k3s.enabled=false \
   --set manager.ingress.enabled=false \
-  --set global.cattle.url=https://rancher.enclave.kubernerdes.com
+  --set global.cattle.url="${RANCHER_URL}" \
+  --set registry="${INTERNAL_REGISTRY}" \
+  --set controller.image.repository="${INTERNAL_REGISTRY}/neuvector/controller" \
+  --set manager.image.repository="${INTERNAL_REGISTRY}/neuvector/manager" \
+  --set cve.scanner.image.repository="${INTERNAL_REGISTRY}/neuvector/scanner" \
+  --set cve.updater.image.repository="${INTERNAL_REGISTRY}/neuvector/updater" \
+  --set enforcer.image.repository="${INTERNAL_REGISTRY}/neuvector/enforcer"
 
-# Wait for pods to be ready
-kubectl get pods -n cattle-neuvector-system -w
+kubectl -n cattle-neuvector-system rollout status deploy/neuvector-manager-pod
 
-#######################################
-# Create Ingress for NeuVector Manager
-#######################################
-cat << EOF > neuvector-ingress.yaml
+# ---------------------------------------------------------------------------
+# Ingress for NeuVector Manager UI
+# ---------------------------------------------------------------------------
+cat << 'EOF' > /tmp/neuvector-ingress.yaml
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -60,14 +85,16 @@ spec:
     - hosts:
         - neuvector.applications.enclave.kubernerdes.com
 EOF
-
-kubectl apply -f neuvector-ingress.yaml
-
-# Verify ingress
+kubectl apply -f /tmp/neuvector-ingress.yaml
 kubectl get ingress -n cattle-neuvector-system
 
+# ---------------------------------------------------------------------------
 # Retrieve bootstrap password
+# ---------------------------------------------------------------------------
 echo "NeuVector UI: https://neuvector.applications.enclave.kubernerdes.com"
-echo "Bootstrap password: $(kubectl get secret --namespace cattle-neuvector-system neuvector-bootstrap-secret -o go-template='{{ .data.bootstrapPassword|base64decode}}{{ "\n" }}')"
+echo "Bootstrap password: $(kubectl get secret \
+  --namespace cattle-neuvector-system neuvector-bootstrap-secret \
+  -o go-template='{{ .data.bootstrapPassword|base64decode}}{{ "\n" }}' 2>/dev/null \
+  || echo '(not yet available — check after pods are fully ready)')"
 
 exit 0

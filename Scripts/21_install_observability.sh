@@ -1,95 +1,80 @@
-# This "script" was not intended to be run as a script, and instead cut-and-paste the pieces (hence no #!/bin/sh at the top ;-_
-# Reference: https://observabilitymanager.docs.observability.com/how-to-guides/new-user-guides/kubernetes-cluster-setup/k3s-for-observability
+# 21_install_observability.sh — Deploy RGS (SUSE) Observability
+#
+# Not intended to be run as a script — cut and paste sections as needed.
+# Run from the admin node (nuc-00) with KUBECONFIG pointing to the
+# observability cluster.
+#
+# Prerequisites:
+#   - 3 SL-Micro VMs deployed on Harvester (observability-01/02/03)
+#   - RKE2 installed on all 3 VMs (Scripts/install_RKE2.sh — observability case)
+#   - KUBECONFIG saved as ~/.kube/enclave-observability.kubeconfig
+#   - O11Y_LICENSE env var set (SUSE Observability license key)
+#   - hauler store serving registry on port 5000
+#
+# Reference:
+#   https://docs.stackstate.com/
 
-# you need to retrieve the KUBECONFIG from Rancher Manager
-# save it as ~/.kube/enclave-observability.kubeconfig
-chmod 0664 $KUBECONFIG
+INTERNAL_REGISTRY="10.10.12.10:5000"
+RANCHER_URL="https://rancher.enclave.kubernerdes.com"
+O11Y_URL="https://observability.enclave.kubernerdes.com"
+
 export KUBECONFIG=~/.kube/enclave-observability.kubeconfig
-scp $KUBECONFIG 10.10.12.10:/srv/www/.kube/
+kubectl get nodes
 
-#######################################
-# Install Cert Manager
-#######################################
-CERTMGR_VERSION=v1.19.4
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/${CERTMGR_VERSION}/cert-manager.crds.yaml
+# ---------------------------------------------------------------------------
+# cert-manager (required by Observability)
+# ---------------------------------------------------------------------------
+CERTMGR_VERSION="v1.18.0"
 
-helm repo add jetstack https://charts.jetstack.io
-helm repo update
+kubectl apply -f "https://github.com/cert-manager/cert-manager/releases/download/${CERTMGR_VERSION}/cert-manager.crds.yaml"
 
-#######################################
-# Install SUSE Observability
-#######################################
-echo "Installing SUSE Observability (StackState)..."
+helm upgrade --install cert-manager \
+  oci://${INTERNAL_REGISTRY}/charts/cert-manager \
+  --version "${CERTMGR_VERSION}" \
+  --namespace cert-manager \
+  --create-namespace \
+  --set image.repository="${INTERNAL_REGISTRY}/jetstack/cert-manager-controller" \
+  --set webhook.image.repository="${INTERNAL_REGISTRY}/jetstack/cert-manager-webhook" \
+  --set cainjector.image.repository="${INTERNAL_REGISTRY}/jetstack/cert-manager-cainjector" \
+  --set startupapicheck.image.repository="${INTERNAL_REGISTRY}/jetstack/cert-manager-startupapicheck"
 
-# I do this in a separate/well-known directory - not necessary
-mv ~/Developer/Projects/observability.enclave.kubernerdes.com ~/Developer/Projects/observability.enclave.kubernerdes.com-$(date +%F)
-mkdir -p ~/Developer/Projects/observability.enclave.kubernerdes.com; cd $_
+kubectl -n cert-manager rollout status deploy/cert-manager
 
-# Add the SUSE Observability Helm Repo
-helm repo add suse-observability https://charts.rancher.com/server-charts/prime/suse-observability
-helm repo update
+# ---------------------------------------------------------------------------
+# SUSE Observability
+# ---------------------------------------------------------------------------
+[ -z "${O11Y_LICENSE:-}" ] && { echo "ERROR: O11Y_LICENSE is not set."; exit 1; }
 
-# Create template files
-export VALUES_DIR=.
+WORK_DIR=~/observability-install
+mkdir -p "${WORK_DIR}" && cd "${WORK_DIR}"
+
+# Generate values files from the Observability chart template
+export VALUES_DIR="${WORK_DIR}"
 helm template \
-  --set license="$O11Y_LICENSE" \
-  --set rancherUrl='https://rancher.enclave.kubernerdes.com' \
-  --set baseUrl='https://observability.enclave.kubernerdes.com' \
+  --set license="${O11Y_LICENSE}" \
+  --set rancherUrl="${RANCHER_URL}" \
+  --set baseUrl="${O11Y_URL}" \
   --set sizing.profile='10-nonha' \
   suse-observability-values \
-  suse-observability/suse-observability-values --output-dir $VALUES_DIR
+  oci://${INTERNAL_REGISTRY}/charts/suse-observability-values \
+  --output-dir "${VALUES_DIR}"
 
-# Install using temmplate files created in previous step
-helm upgrade --install \
-    --namespace suse-observability \
-    --create-namespace \
-    --values $VALUES_DIR/suse-observability-values/templates/baseConfig_values.yaml \
-    --values $VALUES_DIR/suse-observability-values/templates/sizing_values.yaml \
-    --values $VALUES_DIR/suse-observability-values/templates/affinity_values.yaml \
-    suse-observability \
-    suse-observability/suse-observability
+# Install Observability
+helm upgrade --install suse-observability \
+  oci://${INTERNAL_REGISTRY}/charts/suse-observability \
+  --namespace suse-observability \
+  --create-namespace \
+  --values "${VALUES_DIR}/suse-observability-values/templates/baseConfig_values.yaml" \
+  --values "${VALUES_DIR}/suse-observability-values/templates/sizing_values.yaml" \
+  --values "${VALUES_DIR}/suse-observability-values/templates/affinity_values.yaml"
 
-kubectl get all -n suse-observability
-
-echo "Note: you are going to see a LOT of scary warnings while things spin up.  You can likely ignore them.
-echo "      This will take 15-20 minutes before things are working and stabilized"
+echo "NOTE: Observability takes 15-20 minutes to fully stabilize."
 kubectl get pods -n suse-observability -w
 
-grep 'admin password' $(find $HOME -name baseConfig_values.yaml)
-
-# Create ingress using traefik for O11y (for K3s or RKE2)
-case $(kubectl version -o json | jq -r '.serverVersion.gitVersion') in 
-  *k3s*)
-cat << EOF > suse-observability-ingress.yaml
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: suse-observability-ui
-  namespace: suse-observability
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    traefik.ingress.kubernetes.io/router.tls: "true"
-spec:
-  ingressClassName: traefik
-  rules:
-  - host: observability.enclave.kubernerdes.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: suse-observability-router
-            port:
-              number: 8080
-  tls:
-  - hosts:
-    - observability.enclave.kubernerdes.com
-EOF
-  ;;
-  *rke2*)
-cat << EOF > suse-observability-ingress.yaml
+# ---------------------------------------------------------------------------
+# Ingress (RKE2 uses nginx by default)
+# ---------------------------------------------------------------------------
+cat << EOF > "${WORK_DIR}/suse-observability-ingress.yaml"
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -109,9 +94,16 @@ spec:
             name: suse-observability-router
             port:
               number: 8080
+  tls:
+  - hosts:
+    - observability.enclave.kubernerdes.com
 EOF
-  ;;
-esac
-kubectl apply -f ./suse-observability-ingress.yaml
+kubectl apply -f "${WORK_DIR}/suse-observability-ingress.yaml"
+
+# ---------------------------------------------------------------------------
+# Retrieve admin password
+# ---------------------------------------------------------------------------
+echo "Observability UI : ${O11Y_URL}"
+grep 'admin.*password' "$(find ${VALUES_DIR} -name baseConfig_values.yaml)" || true
 
 exit 0
