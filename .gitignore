@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# Credentials and secrets — keep out of repo
+*.credentials
+*.key
+*.pem
+*.p12
+*.pfx
+*.token
+*_password*
+*_secret*
+
+# Hauler store (large binary content)
+hauler-store/
+*.hauler
+
+# Kubeconfig files
+*.kubeconfig
+kubeconfig

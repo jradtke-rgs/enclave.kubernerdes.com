@@ -1,0 +1,5 @@
+# RGS Carbide credentials — copy to ~/.bashrc.d/RGS and fill in your values
+# DO NOT commit the filled-in copy; this template file is safe to commit.
+export Carbide_Key=""
+export Carbide_Registry_Username=""
+export Carbide_Registry_Password=""

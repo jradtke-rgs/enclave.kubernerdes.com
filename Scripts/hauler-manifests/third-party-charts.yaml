@@ -1,0 +1,26 @@
+---
+# Third-party Helm charts
+# These are community/vendor charts pulled from their public repos.
+# `add-images: true` causes hauler to also pull all container images
+# referenced by the chart, so no separate image manifest is needed for these.
+#
+# Update versions here when upgrading components.
+apiVersion: content.hauler.cattle.io/v1
+kind: Charts
+metadata:
+  name: third-party-charts
+spec:
+  charts:
+    # cert-manager — required by Rancher Manager
+    - name: cert-manager
+      repoURL: https://charts.jetstack.io
+      version: v1.18.0
+      add-images: true
+      add-dependencies: true
+
+    # Longhorn — distributed block storage (optional, included for app clusters)
+    - name: longhorn
+      repoURL: https://charts.longhorn.io
+      version: 1.7.2
+      add-images: true
+      add-dependencies: true
