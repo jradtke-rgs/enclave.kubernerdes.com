@@ -161,6 +161,10 @@ echo "==> Writing harbor.yml"
 cat > "${HARBOR_INSTALL_DIR}/harbor.yml" << HARBORYML
 hostname: ${HARBOR_HOSTNAME}
 
+# Port 80 is taken by Apache on nuc-00; Harbor HTTP redirect uses 8888
+http:
+  port: 8888
+
 https:
   port: 443
   certificate: ${HARBOR_CERT_DIR}/harbor.crt
