@@ -13,10 +13,11 @@ set -euo pipefail
 CONFIG_DIR="${HOME}/.config/llm-manager"
 CONFIG_FILE="${CONFIG_DIR}/config"
 ACTIVE_FILE="${CONFIG_DIR}/active"
-ENGINES=("ollama" "vllm" "lmstudio")
+ENGINES=("ollama" "vllm" "lmstudio" "nim")
 
 CONTAINER_OLLAMA="llm-ollama"
 CONTAINER_VLLM="llm-vllm"
+CONTAINER_NIM="llm-nim"
 CONTAINER_WEBUI="open-webui"
 
 ###############################################################################
@@ -26,14 +27,18 @@ declare -A DEFAULTS=(
   [OLLAMA_PORT]=11434
   [VLLM_PORT]=8000
   [LMSTUDIO_PORT]=1234
+  [NIM_PORT]=8000
   [WEBUI_PORT]=12000
   [OLLAMA_IMAGE]="ollama/ollama"
   [VLLM_IMAGE]="vllm/vllm-openai"
   [WEBUI_IMAGE]="ghcr.io/open-webui/open-webui:main"
+  [NIM_IMAGE]="nvcr.io/nim/nvidia/nemotron-3-nano:1.7.0-variant"
   [VLLM_MODEL]="meta-llama/Llama-3.1-8B-Instruct"
   [VLLM_GPU_MEMORY_UTIL]=0.9
   [OLLAMA_VOLUME]="llm-manager-ollama"
   [WEBUI_VOLUME]="llm-manager-webui"
+  [NIM_CACHE_PATH]="${HOME}/.nim/cache"
+  [NGC_API_KEY]=""
 )
 
 ###############################################################################
@@ -48,7 +53,7 @@ usage() {
 Usage: llm-manager.sh <command> [engine] [options]
 
 Commands:
-  start <engine>       Start an engine (ollama|vllm|lmstudio) + OpenWebUI
+  start <engine>       Start an engine (ollama|vllm|lmstudio|nim) + OpenWebUI
   stop [engine|all]    Stop engine and/or OpenWebUI
   restart <engine>     Stop then start
   status               Show what's running, ports, GPU usage
@@ -60,6 +65,12 @@ Commands:
   config show          Show current configuration
   config set <k> <v>   Set a config value
   config reset         Reset to defaults
+
+NIM notes:
+  NIM is image-per-model: each model is a separate Docker image.
+  Set the image with: config set NIM_IMAGE <nvcr.io/nim/...>
+  Set your NGC API key: config set NGC_API_KEY <nvapi-...>
+  To switch models, change NIM_IMAGE and restart nim.
 EOF
   exit "${1:-0}"
 }
@@ -150,6 +161,7 @@ engine_container_name() {
   case "$1" in
     ollama)   echo "${CONTAINER_OLLAMA}" ;;
     vllm)     echo "${CONTAINER_VLLM}" ;;
+    nim)      echo "${CONTAINER_NIM}" ;;
     lmstudio) echo "" ;;  # native process
   esac
 }
@@ -159,6 +171,7 @@ engine_port() {
     ollama)   echo "${OLLAMA_PORT}" ;;
     vllm)     echo "${VLLM_PORT}" ;;
     lmstudio) echo "${LMSTUDIO_PORT}" ;;
+    nim)      echo "${NIM_PORT}" ;;
   esac
 }
 
@@ -169,6 +182,7 @@ engine_api_base() {
     ollama)   echo "http://host.docker.internal:${port}/v1" ;;
     vllm)     echo "http://host.docker.internal:${port}/v1" ;;
     lmstudio) echo "http://host.docker.internal:${port}/v1" ;;
+    nim)      echo "http://host.docker.internal:${port}/v1" ;;
   esac
 }
 
@@ -196,8 +210,9 @@ stop_container() {
 stop_engine() {
   local engine="$1"
   case "${engine}" in
-    ollama) stop_container "${CONTAINER_OLLAMA}" ;;
-    vllm)   stop_container "${CONTAINER_VLLM}" ;;
+    ollama)   stop_container "${CONTAINER_OLLAMA}" ;;
+    vllm)     stop_container "${CONTAINER_VLLM}" ;;
+    nim)      stop_container "${CONTAINER_NIM}" ;;
     lmstudio)
       if pgrep -f "lmstudio|lms server" >/dev/null 2>&1; then
         info "Stopping LMStudio server..."
@@ -268,6 +283,25 @@ start_engine_lmstudio() {
   info "LMStudio running on port ${LMSTUDIO_PORT}."
 }
 
+start_engine_nim() {
+  require_docker
+  [[ -z "${NGC_API_KEY}" ]] && die "NGC_API_KEY is not set. Run: config set NGC_API_KEY <nvapi-...>"
+  [[ -z "${NIM_IMAGE}" ]]   && die "NIM_IMAGE is not set. Run: config set NIM_IMAGE <nvcr.io/nim/...>"
+  mkdir -p "${NIM_CACHE_PATH}"
+  info "Starting NIM engine (image: ${NIM_IMAGE})..."
+  docker run -d \
+    --name "${CONTAINER_NIM}" \
+    --gpus=all --runtime=nvidia \
+    -p "${NIM_PORT}:8000" \
+    -v "${NIM_CACHE_PATH}:/opt/nim/.cache" \
+    -e NGC_API_KEY="${NGC_API_KEY}" \
+    -e NIM_TELEMETRY_MODE=0 \
+    "${NIM_IMAGE}" >/dev/null
+  info "NIM running on port ${NIM_PORT}."
+  info "Note: model is baked into the image (${NIM_IMAGE})."
+  info "To switch models: config set NIM_IMAGE <new-image> && restart nim"
+}
+
 start_webui() {
   local engine="$1"
   local api_base
@@ -306,6 +340,7 @@ cmd_start() {
     ollama)   start_engine_ollama ;;
     vllm)     start_engine_vllm ;;
     lmstudio) start_engine_lmstudio ;;
+    nim)      start_engine_nim ;;
   esac
 
   set_active_engine "${engine}"
@@ -415,6 +450,10 @@ cmd_update() {
     vllm)
       update_image "${VLLM_IMAGE}" "vLLM"
       ;;
+    nim)
+      [[ -z "${NIM_IMAGE}" ]] && die "NIM_IMAGE is not set. Run: config set NIM_IMAGE <nvcr.io/nim/...>"
+      update_image "${NIM_IMAGE}" "NIM"
+      ;;
     lmstudio)
       warn "LMStudio is installed natively — update it via the LMStudio app or CLI."
       ;;
@@ -424,27 +463,29 @@ cmd_update() {
     all)
       update_image "${OLLAMA_IMAGE}" "Ollama"
       update_image "${VLLM_IMAGE}" "vLLM"
+      [[ -n "${NIM_IMAGE}" ]] && update_image "${NIM_IMAGE}" "NIM"
       update_image "${WEBUI_IMAGE}" "OpenWebUI"
       info "All Docker images updated."
       ;;
     *)
-      die "Usage: update [ollama|vllm|lmstudio|webui|all]"
+      die "Usage: update [ollama|vllm|nim|lmstudio|webui|all]"
       ;;
   esac
 }
 
 cmd_logs() {
   local target="${1:-}"
-  [[ -z "${target}" ]] && die "Usage: logs <ollama|vllm|webui>"
+  [[ -z "${target}" ]] && die "Usage: logs <ollama|vllm|nim|webui>"
   load_config
 
   local cname=""
   case "${target}" in
-    ollama) cname="${CONTAINER_OLLAMA}" ;;
-    vllm)   cname="${CONTAINER_VLLM}" ;;
-    webui)  cname="${CONTAINER_WEBUI}" ;;
+    ollama)   cname="${CONTAINER_OLLAMA}" ;;
+    vllm)     cname="${CONTAINER_VLLM}" ;;
+    nim)      cname="${CONTAINER_NIM}" ;;
+    webui)    cname="${CONTAINER_WEBUI}" ;;
     lmstudio) die "LMStudio runs natively — check its own log output." ;;
-    *) die "Usage: logs <ollama|vllm|webui>" ;;
+    *)        die "Usage: logs <ollama|vllm|nim|webui>" ;;
   esac
 
   require_docker
@@ -481,6 +522,14 @@ cmd_models() {
             python3 -m json.tool 2>/dev/null || \
             curl -s "http://localhost:${port}/v1/models"
           ;;
+        nim)
+          local port
+          port=$(engine_port nim)
+          info "Model served by NIM (image: ${NIM_IMAGE}):"
+          curl -s "http://localhost:${port}/v1/models" | \
+            python3 -m json.tool 2>/dev/null || \
+            curl -s "http://localhost:${port}/v1/models"
+          ;;
         lmstudio)
           if command -v lms >/dev/null 2>&1; then
             lms ls
@@ -510,6 +559,13 @@ cmd_models() {
           warn "vLLM loads models at startup. Set the model with: config set VLLM_MODEL ${name}"
           warn "Then restart: restart vllm"
           ;;
+        nim)
+          warn "NIM is image-per-model: each model is a separate Docker image."
+          warn "To switch to a different model, run:"
+          warn "  docker pull nvcr.io/nim/<org>/<model>:<tag>"
+          warn "  config set NIM_IMAGE nvcr.io/nim/<org>/<model>:<tag>"
+          warn "  restart nim"
+          ;;
         lmstudio)
           if command -v lms >/dev/null 2>&1; then
             lms pull "${name}"
@@ -533,6 +589,9 @@ cmd_models() {
           ;;
         vllm)
           warn "vLLM doesn't support runtime model removal."
+          ;;
+        nim)
+          warn "NIM models are Docker images. To remove: docker rmi ${name}"
           ;;
         lmstudio)
           if command -v lms >/dev/null 2>&1; then
