@@ -26,3 +26,8 @@ spec:
     # Carbide public key (image signature verification)
     - path: https://raw.githubusercontent.com/rancherfederal/carbide-releases/main/carbide-key.pub
       name: carbide-key.pub
+
+    # Harbor offline installer (used by 02_install_harbor.sh)
+    # Update version here when upgrading Harbor
+    - path: https://github.com/goharbor/harbor/releases/download/v2.12.2/harbor-offline-installer-v2.12.2.tgz
+      name: harbor-offline-installer-v2.12.2.tgz
