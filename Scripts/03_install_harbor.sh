@@ -175,6 +175,13 @@ database:
 
 data_volume: ${HARBOR_DATA_DIR}
 
+jobservice:
+  max_job_workers: 10
+  job_loggers:
+    - STD_OUTPUT
+    - FILE
+  logger_sweeper_duration: 1
+
 log:
   level: info
   local:
@@ -239,22 +246,20 @@ hauler login "${HARBOR_HOSTNAME}" \
   -u admin \
   -p "${HARBOR_ADMIN_PASSWORD}"
 
-declare -A STORE_PROJECTS=(
-  ["rancher"]="rancher"
-  ["rke2"]="rke2"
-  ["neuvector"]="neuvector"
-  ["harvester"]="harvester"
-  ["carbide-images"]="carbide"
-  ["third-party-charts"]="third-party-charts"
-)
-
-for STORE in "${!STORE_PROJECTS[@]}"; do
+for STORE in rancher rke2 neuvector harvester carbide-images third-party-charts; do
+  case "${STORE}" in
+    rancher)            PROJECT="rancher" ;;
+    rke2)               PROJECT="rke2" ;;
+    neuvector)          PROJECT="neuvector" ;;
+    harvester)          PROJECT="harvester" ;;
+    carbide-images)     PROJECT="carbide" ;;
+    third-party-charts) PROJECT="third-party-charts" ;;
+  esac
   STORE_PATH="${HAULER_STORE_DIR}/${STORE}"
   if [[ ! -d "${STORE_PATH}" ]]; then
     echo "    Skipping ${STORE} — store not found at ${STORE_PATH}"
     continue
   fi
-  PROJECT="${STORE_PROJECTS[${STORE}]}"
   echo "==> Pushing ${STORE} → ${HARBOR_HOSTNAME}/${PROJECT}"
   hauler store copy \
     --store "${STORE_PATH}" \
