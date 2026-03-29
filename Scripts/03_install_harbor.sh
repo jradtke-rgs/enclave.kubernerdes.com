@@ -51,10 +51,7 @@ if [[ ! -f "${CA_DIR}/ca.crt" || ! -f "${CA_DIR}/ca.key" ]]; then
   exit 1
 fi
 
-if [[ -z "${HARBOR_ADMIN_PASSWORD:-}" ]]; then
-  read -rsp "Harbor admin password: " HARBOR_ADMIN_PASSWORD
-  echo
-fi
+HARBOR_ADMIN_PASSWORD="${HARBOR_ADMIN_PASSWORD:-Harbor_Enclave_Admin}"
 
 # ---------------------------------------------------------------------------
 # Step 1 — Install Docker and docker-compose
