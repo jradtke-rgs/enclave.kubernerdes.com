@@ -194,7 +194,7 @@ done
 # ---------------------------------------------------------------------------
 # 9. Tools
 # ---------------------------------------------------------------------------
-sudo zypper --non-interactive install git vim curl wget
+sudo zypper --non-interactive install git vim curl wget iotop
 
 # Clone this repo to the web root so it is accessible to all enclave nodes
 sudo mkdir -p /srv/www/htdocs/enclave.kubernerdes.com
