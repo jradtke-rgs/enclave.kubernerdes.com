@@ -140,14 +140,16 @@ if [[ ! -f "${HARBOR_CERT_DIR}/harbor.crt" ]]; then
     -key "${HARBOR_CERT_DIR}/harbor.key" \
     -out "${HARBOR_CERT_DIR}/harbor.csr" \
     -subj "/CN=${HARBOR_HOSTNAME}/O=enclave/C=US"
+  printf "subjectAltName=IP:10.10.12.10,DNS:%s" "${HARBOR_HOSTNAME}" \
+    > "${HARBOR_CERT_DIR}/harbor.ext"
   openssl x509 -req -days 730 \
     -in     "${HARBOR_CERT_DIR}/harbor.csr" \
     -CA     "${CA_DIR}/ca.crt" \
     -CAkey  "${CA_DIR}/ca.key" \
     -CAcreateserial \
     -out    "${HARBOR_CERT_DIR}/harbor.crt" \
-    -extfile <(printf "subjectAltName=IP:10.10.12.10,DNS:%s" "${HARBOR_HOSTNAME}")
-  rm -f "${HARBOR_CERT_DIR}/harbor.csr"
+    -extfile "${HARBOR_CERT_DIR}/harbor.ext"
+  rm -f "${HARBOR_CERT_DIR}/harbor.csr" "${HARBOR_CERT_DIR}/harbor.ext"
   echo "    Certificate: ${HARBOR_CERT_DIR}/harbor.crt (signed by enclave CA, valid 2 years)"
 else
   echo "    Certificate already exists: ${HARBOR_CERT_DIR}/harbor.crt"
