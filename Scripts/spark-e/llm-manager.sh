@@ -65,6 +65,7 @@ Commands:
   config show          Show current configuration
   config set <k> <v>   Set a config value
   config reset         Reset to defaults
+  self-update          Update this script from GitHub
 
 NIM notes:
   NIM is image-per-model: each model is a separate Docker image.
@@ -608,6 +609,18 @@ cmd_models() {
   esac
 }
 
+cmd_self_update() {
+  local url="https://raw.githubusercontent.com/jradtke-rgs/enclave.kubernerdes.com/refs/heads/main/Scripts/spark-e/llm-manager.sh"
+  local self
+  self="$(realpath "$0")"
+  info "Updating ${self} from GitHub..."
+  wget -q -O "${self}.tmp" "${url}" || die "Download failed. Check network/URL."
+  bash -n "${self}.tmp"            || die "Downloaded script failed syntax check — aborting."
+  mv "${self}.tmp" "${self}"
+  chmod +x "${self}"
+  info "Update complete."
+}
+
 cmd_config() {
   local sub="${1:-}" key="${2:-}" value="${3:-}"
   case "${sub}" in
@@ -646,7 +659,8 @@ main() {
     update)  cmd_update "$@" ;;
     logs)    cmd_logs "$@" ;;
     models)  cmd_models "$@" ;;
-    config)  cmd_config "$@" ;;
+    config)      cmd_config "$@" ;;
+    self-update) cmd_self_update ;;
     help|-h|--help) usage 0 ;;
     *)       usage 1 ;;
   esac
