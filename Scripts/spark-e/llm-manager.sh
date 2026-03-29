@@ -616,8 +616,7 @@ cmd_self_update() {
   info "Updating ${self} from GitHub..."
   wget -q -O "${self}.tmp" "${url}" || die "Download failed. Check network/URL."
   bash -n "${self}.tmp"            || die "Downloaded script failed syntax check — aborting."
-  mv "${self}.tmp" "${self}"
-  chmod +x "${self}"
+  install -m 0755 -o "$(whoami)" "${self}.tmp" "${self}"
   info "Update complete."
 }
 
