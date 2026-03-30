@@ -25,7 +25,7 @@ set -euo pipefail
 HARBOR_ADMIN_PASSWORD="Passw0rd01"
 
 HARBOR_VERSION="${HARBOR_VERSION:-v2.12.2}"
-HARBOR_HOSTNAME="${HARBOR_HOSTNAME:-nuc-00.enclave.kubernerdes.com}"
+HARBOR_HOSTNAME="${HARBOR_HOSTNAME:-harbor.enclave.kubernerdes.com}"
 HARBOR_DATA_DIR="${HARBOR_DATA_DIR:-/data/harbor}"
 HARBOR_INSTALL_DIR="/opt/harbor"
 HARBOR_CERT_DIR="${HARBOR_INSTALL_DIR}/certs"
@@ -142,7 +142,7 @@ if [[ ! -f "${HARBOR_CERT_DIR}/harbor.crt" ]]; then
     -key "${HARBOR_CERT_DIR}/harbor.key" \
     -out "${HARBOR_CERT_DIR}/harbor.csr" \
     -subj "/CN=${HARBOR_HOSTNAME}/O=enclave/C=US"
-  printf "subjectAltName=IP:10.10.12.10,DNS:%s" "${HARBOR_HOSTNAME}" \
+  printf "subjectAltName=IP:10.10.12.10,DNS:harbor.enclave.kubernerdes.com,DNS:nuc-00.enclave.kubernerdes.com" \
     > "${HARBOR_CERT_DIR}/harbor.ext"
   openssl x509 -req -days 730 \
     -in     "${HARBOR_CERT_DIR}/harbor.csr" \
