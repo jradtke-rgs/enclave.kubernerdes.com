@@ -18,6 +18,14 @@ spec:
       add-images: true
       add-dependencies: true
 
+    # Rancher Manager — Helm chart from public stable repo
+    # Images are hauled separately via `hauler store sync --products rancher=v2.13.3`
+    # NOTE: Rancher 2.13.x supports Kubernetes <= 1.34.x — pin RKE2 accordingly.
+    - name: rancher
+      repoURL: https://releases.rancher.com/server-charts/stable
+      version: 2.13.3
+      add-images: false
+
     # Longhorn — distributed block storage (optional, included for app clusters)
     - name: longhorn
       repoURL: https://charts.longhorn.io

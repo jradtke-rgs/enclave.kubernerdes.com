@@ -22,8 +22,7 @@ case $(uname -n) in
   rancher-0*)
     cat << 'EOF' | tee ~/.rke2.vars
 export MY_CLUSTER=rancher
-export MY_RKE2_VERSION=v1.35.2+rke2r1
-export MY_RKE2_INSTALL_CHANNEL=v1.35
+export MY_RKE2_VERSION=v1.34.4+rke2r1
 export MY_RKE2_TOKEN=ChangeMe-RancherRKE2
 export MY_RKE2_VIP=10.10.12.210
 export MY_RKE2_HOSTNAME=rancher.enclave.kubernerdes.com
@@ -32,8 +31,7 @@ EOF
   observability-0*)
     cat << 'EOF' | tee ~/.rke2.vars
 export MY_CLUSTER=observability
-export MY_RKE2_VERSION=v1.35.2+rke2r1
-export MY_RKE2_INSTALL_CHANNEL=v1.35
+export MY_RKE2_VERSION=v1.34.4+rke2r1
 export MY_RKE2_TOKEN=ChangeMe-ObsRKE2
 export MY_RKE2_VIP=10.10.12.220
 export MY_RKE2_HOSTNAME=observability.enclave.kubernerdes.com
@@ -42,8 +40,7 @@ EOF
   apps-0*)
     cat << 'EOF' | tee ~/.rke2.vars
 export MY_CLUSTER=apps
-export MY_RKE2_VERSION=v1.35.2+rke2r1
-export MY_RKE2_INSTALL_CHANNEL=v1.35
+export MY_RKE2_VERSION=v1.34.4+rke2r1
 export MY_RKE2_TOKEN=ChangeMe-AppsRKE2
 export MY_RKE2_VIP=10.10.12.230
 export MY_RKE2_HOSTNAME=apps.enclave.kubernerdes.com
@@ -108,7 +105,18 @@ EOF
 esac
 
 # ---------------------------------------------------------------------------
-# Install RKE2 — from hauler fileserver (airgap)
+# registries.yaml — tell RKE2 to use plain HTTP for internal registry
+# Must be in place BEFORE rke2-server starts or it will try HTTPS and fail.
+# ---------------------------------------------------------------------------
+cat << EOF > /etc/rancher/rke2/registries.yaml
+mirrors:
+  "${INTERNAL_REGISTRY}":
+    endpoint:
+      - "http://${INTERNAL_REGISTRY}"
+EOF
+
+# ---------------------------------------------------------------------------
+# Install RKE2 — from hauler fileserver (airgap), pinned version
 # ---------------------------------------------------------------------------
 case $(uname -n) in
   *-01) echo "Installing genesis node (no delay)" ;;
@@ -120,7 +128,7 @@ case $(uname -n) in
 esac
 
 curl -sfL ${HAULER_FILESERVER}/install-rke2.sh \
-  | INSTALL_RKE2_CHANNEL=${MY_RKE2_INSTALL_CHANNEL} sh -
+  | INSTALL_RKE2_VERSION=${MY_RKE2_VERSION} sh -
 
 # PATH additions for RKE2 binaries
 echo 'export PATH=$PATH:/opt/rke2/bin:/var/lib/rancher/rke2/bin' >> ~/.bashrc
