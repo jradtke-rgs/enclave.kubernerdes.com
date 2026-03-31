@@ -1,0 +1,6 @@
+# Install Harvester CSI Driver to RMS
+helm install --labels=catalog.cattle.io/cluster-repo-name=rancher-charts --namespace=kube-system --timeout=10m0s --values=/home/shell/helm/values-harvester-csi-driver-108.0.1-up0.1.25.yaml --version=108.0.1+up0.1.25 --wait=true harvester-csi-driver /home/shell/helm/harvester-csi-driver-108.0.1-up0.1.25.tgz
+
+# Install Harvester Cloud Provider
+helm install --labels=catalog.cattle.io/cluster-repo-name=rancher-charts --namespace=kube-system --timeout=10m0s --values=/home/shell/helm/values-harvester-csi-driver-108.0.1-up0.1.25.yaml --version=108.0.1+up0.1.25 --wait=true harvester-csi-driver /home/shell/helm/harvester-csi-driver-108.0.1-up0.1.25.tgz
+

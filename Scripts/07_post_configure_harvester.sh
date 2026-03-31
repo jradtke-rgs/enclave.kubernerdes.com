@@ -2,10 +2,50 @@
 set -euo pipefail
 
 # prereqs:  You need a kubeconfig to connect to the Harvester API
+#           Run from nuc-00 (has enclave CA at /etc/ssl/enclave-ca/ca.crt)
 # Usage:    KUBECONFIG=/path/to/harvester-kubeconfig.yaml ./07_post_configure_harvester.sh
 
 IMAGES_BASE_URL="http://10.10.12.10/images"
 TEMPLATES_BASE_URL="http://10.10.12.10/enclave.kubernerdes.com/Files/CloudConfigurationTemplates"
+
+CA_DIR="/etc/ssl/enclave-ca"
+HARBOR_REGISTRY="${HARBOR_REGISTRY:-harbor.enclave.kubernerdes.com}"
+HARBOR_ADMIN_PASSWORD="${HARBOR_ADMIN_PASSWORD:-Passw0rd01}"
+
+# ─────────────────────────────────────────────────────────────────
+# HARBOR INTEGRATION
+# Must be applied BEFORE importing Harvester into Rancher Manager,
+# so the cattle-cluster-agent can pull from Harbor on first contact.
+# ─────────────────────────────────────────────────────────────────
+
+echo "==> Configuring Harvester: trust enclave root CA"
+if [[ ! -f "${CA_DIR}/ca.crt" ]]; then
+  echo "    ERROR: CA not found at ${CA_DIR}/ca.crt — run this script from nuc-00"
+  exit 1
+fi
+CA_CERT=$(cat "${CA_DIR}/ca.crt")
+kubectl patch setting additional-ca --type merge -p "{\"value\":$(python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))" <<< "${CA_CERT}")}"
+echo "    Waiting for apply-sync-additional-ca jobs to complete..."
+sleep 10
+kubectl wait job \
+  --for=condition=complete \
+  --timeout=120s \
+  -l harvesterhci.io/managed=true \
+  -n cattle-system 2>/dev/null || echo "    (jobs may have already completed or timed out — check manually)"
+
+echo "==> Configuring Harvester: containerd registry mirror → Harbor"
+REGISTRY_JSON=$(python3 -c "
+import json
+reg = '${HARBOR_REGISTRY}'
+pw  = '${HARBOR_ADMIN_PASSWORD}'
+print(json.dumps({
+  'Mirrors': {reg: {'Endpoints': ['https://' + reg], 'Rewrites': None}},
+  'Configs': {reg: {'Auth': {'Username': 'admin', 'Password': pw}, 'TLS': None}},
+  'Auths': None
+}))
+")
+kubectl patch setting containerd-registry --type merge -p "{\"value\":$(python3 -c "import sys,json; print(json.dumps(sys.argv[1]))" "${REGISTRY_JSON}")}"
+echo "    containerd-registry set — nodes will reconfigure containerd on next sync"
 
 # Sanitize a string into a valid Kubernetes resource name
 k8s_name() {
