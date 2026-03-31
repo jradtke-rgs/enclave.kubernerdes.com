@@ -53,57 +53,6 @@ k8s_name() {
 }
 
 # ─────────────────────────────────────────────────────────────────
-# NETWORKING
-# ─────────────────────────────────────────────────────────────────
-
-echo "==> Creating ClusterNetwork: clstrnet-vms"
-# ClusterNetwork has no spec field in this Harvester version
-kubectl apply -f - <<EOF
-apiVersion: network.harvesterhci.io/v1beta1
-kind: ClusterNetwork
-metadata:
-  name: clstrnet-vms
-  annotations:
-    network.harvesterhci.io/description: "Cluster Network for VMs"
-EOF
-
-echo "==> Creating VlanConfig (Network Configuration): netconf-vms"
-# NodeNetwork was replaced by VlanConfig in this Harvester version.
-# Empty nodeSelector matches all nodes — all nodes are identical so one config covers all.
-kubectl apply -f - <<EOF
-apiVersion: network.harvesterhci.io/v1beta1
-kind: VlanConfig
-metadata:
-  name: netconf-vms
-  annotations:
-    network.harvesterhci.io/description: "Network Configuration for VMs"
-spec:
-  clusterNetwork: clstrnet-vms
-  nodeSelector: {}
-  uplink:
-    nics:
-      - enp0s13f0u1
-    bondOptions:
-      mode: active-backup
-      miimon: 100
-EOF
-
-echo "==> Creating VM Network: vmnet-vms (UntaggedNetwork)"
-kubectl apply -f - <<EOF
-apiVersion: k8s.cni.cncf.io/v1
-kind: NetworkAttachmentDefinition
-metadata:
-  name: vmnet-vms
-  namespace: default
-  labels:
-    network.harvesterhci.io/ready: "true"
-  annotations:
-    network.harvesterhci.io/route: '{"mode":"auto","serverIPAddr":"","cidr":"","gateway":""}'
-spec:
-  config: '{"cniVersion":"0.3.1","name":"vmnet-vms","type":"bridge","bridge":"clstrnet-vms-br","promiscMode":true,"vlan":0,"ipam":{}}'
-EOF
-
-# ─────────────────────────────────────────────────────────────────
 # IMAGES
 # ─────────────────────────────────────────────────────────────────
 
