@@ -1,7 +1,7 @@
 $TTL 604800 
 $ORIGIN enclave.kubernerdes.com. 
 @	IN SOA      kubernerd.kubernerdes.com.  root.kubernerdes.com. ( 
-            2026031601 ; Serial
+            2026033101 ; Serial
             604800     ; Refresh
             86400      ; Retry
             2419200    ; Expire
@@ -16,11 +16,13 @@ firewall 	IN	CNAME	sophos-xg85.enclave.kubernerdes.com.
 gateway		IN	CNAME	sophos-xg85.enclave.kubernerdes.com.
 cisco-sg300-28	IN 	A	10.10.12.2
 airport-extreme IN 	A	10.10.12.3
+;
 nuc-00-01	IN	A	10.10.12.8
 nuc-00-02	IN	A	10.10.12.9
 nuc-00 		IN	A	10.10.12.10
 hauler		IN	CNAME 	nuc-00.enclave.kubernerdes.com.
 librenms	IN	A	10.10.12.12
+glkvm		IN	A	10.10.12.20
 
 ; Load Balancer for Harvester Cluster(s) - one LB per Harvester Cluster
 ; These are the Host Address - define VIP elsewhere
@@ -323,3 +325,6 @@ vpn-dhcp-254	 IN	 A	 10.10.15.254
 
 ; Docs hosted at github pages
 docs.enclave.kubernerdes.com.   IN      CNAME   jradtke-rgs.github.io.
+
+; Harbor CNAME
+harbor.enclave.kubernerdes.com.	IN	CNAME nuc-00.enclave.kubernerdes.com.

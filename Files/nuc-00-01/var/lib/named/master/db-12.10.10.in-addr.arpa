@@ -1,6 +1,6 @@
 $TTL 2D
 12.10.10.in-addr.arpa.   IN SOA dns.enclave.kubernerdes.com. root.enclave.kubernerdes.com. (
-                        2026030501	; serial
+                        2026033101	; serial
                         1D              ; refresh
                         2H              ; retry
                         1W              ; expiry
@@ -16,6 +16,7 @@ $TTL 2D
 9	IN	PTR	nuc-00-02.enclave.kubernerdes.com.
 10	IN	PTR	kubernerd.enclave.kubernerdes.com.
 12	IN	PTR	librenms.enclave.kubernerdes.com.
+20	IN	PTR	glkvm.enclave.kubernerdes.com.
 
 ; Load Balancer for Kubernetes Cluster(s) - one LB per K8s Cluster (sometimes paired)
 93	IN	PTR	nuc-00-03.enclave.kubernerdes.com.
