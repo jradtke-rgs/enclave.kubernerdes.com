@@ -10,11 +10,8 @@
 #   - Harbor running at harbor.enclave.kubernerdes.com with neuvector project populated
 #   - Enclave root CA trusted on all apps cluster nodes (see install_RKE2.sh)
 #
-# NOTE: The NeuVector helm chart is NOT currently in Harbor.
-#       Before running, add it to the hauler sync and push to Harbor:
-#         hauler store sync --products neuvector=v<version> (verify chart is included)
-#         hauler store copy --store /root/hauler/store/neuvector registry://harbor.enclave.kubernerdes.com/neuvector
-#       Expected chart path: oci://harbor.enclave.kubernerdes.com/neuvector/hauler/core
+# NeuVector helm chart is in Harbor at: third-party-charts/hauler/core:2.8.11
+# (chart version 2.8.11 = NeuVector appVersion 5.4.9)
 #
 # Reference:
 #   https://open-docs.neuvector.com/deploying/kubernetes
@@ -22,6 +19,7 @@
 
 HARBOR_REGISTRY="harbor.enclave.kubernerdes.com"
 NEUVECTOR_VERSION="5.4.9"
+NEUVECTOR_CHART_VERSION="2.8.11"   # chart version for NeuVector 5.4.9
 RANCHER_URL="https://rancher.enclave.kubernerdes.com"
 
 export KUBECONFIG=~/.kube/enclave-apps.kubeconfig
@@ -42,12 +40,12 @@ kubectl create namespace cattle-neuvector-system
 
 # ---------------------------------------------------------------------------
 # Install NeuVector from Harbor
-# Chart:  oci://harbor.enclave.kubernerdes.com/neuvector/hauler/core  (verify path after chart is pushed)
-# Images: harbor.enclave.kubernerdes.com/neuvector/neuvector/<image>
+# Chart:  third-party-charts/hauler/core (chart v2.8.11 = NeuVector 5.4.9)
+# Images: neuvector/neuvector/<image>
 # ---------------------------------------------------------------------------
 helm upgrade --install neuvector \
-  oci://${HARBOR_REGISTRY}/neuvector/hauler/core \
-  --version "${NEUVECTOR_VERSION}" \
+  oci://${HARBOR_REGISTRY}/third-party-charts/hauler/core \
+  --version "${NEUVECTOR_CHART_VERSION}" \
   --namespace cattle-neuvector-system \
   --set manager.svc.type=ClusterIP \
   --set controller.replicas=3 \

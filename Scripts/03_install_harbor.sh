@@ -276,14 +276,32 @@ for PROJECT in rancher rke2 neuvector harvester carbide third-party-charts; do
 done
 
 # ---------------------------------------------------------------------------
-# Step 8 — Push hauler stores to Harbor
+# Step 8 — Push hauler stores to Harbor via crane
 #
 # Map: hauler store directory name → Harbor project name
 # 'files' is intentionally excluded — binaries are served separately via:
 #   hauler store serve fileserver --store /root/hauler/store/files
+#
+# NOTE: hauler store copy has a known credential bug (v1.4.2) that causes
+#       401 errors on push even with valid stored credentials. Use crane
+#       to serve and push instead.
+#       Also: Harbor's internal registry credential (harbor_registry_user)
+#       can drift after restarts. Always restart Harbor before pushing.
 # ---------------------------------------------------------------------------
-echo "==> Logging hauler into Harbor"
-hauler login "${HARBOR_HOSTNAME}" \
+echo "==> Ensuring crane is available"
+if ! command -v crane &>/dev/null; then
+  echo "    Installing crane..."
+  CRANE_VERSION=$(curl -sf https://api.github.com/repos/google/go-containerregistry/releases/latest \
+    | python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'])")
+  curl -sfL "https://github.com/google/go-containerregistry/releases/download/${CRANE_VERSION}/go-containerregistry_Linux_x86_64.tar.gz" \
+    | tar -xz -C /usr/local/bin crane
+fi
+
+echo "==> Restarting Harbor to sync internal credentials before push"
+cd "${HARBOR_INSTALL_DIR}" && docker compose restart && sleep 20 && cd - >/dev/null
+
+echo "==> Logging crane into Harbor"
+crane auth login "${HARBOR_HOSTNAME}" \
   -u admin \
   -p "${HARBOR_ADMIN_PASSWORD}"
 
@@ -301,10 +319,23 @@ for STORE in rancher rke2 neuvector harvester carbide-images third-party-charts;
     echo "    Skipping ${STORE} — store not found at ${STORE_PATH}"
     continue
   fi
+
   echo "==> Pushing ${STORE} → ${HARBOR_HOSTNAME}/${PROJECT}"
-  hauler store copy \
-    --store "${STORE_PATH}" \
-    "registry://${HARBOR_HOSTNAME}/${PROJECT}"
+  # Serve the hauler store as a local registry, then crane copy each artifact to Harbor
+  hauler store serve registry --store "${STORE_PATH}" --port 15000 --readonly=true &
+  HAULER_PID=$!
+  sleep 3
+
+  # Get all tags in the store and crane copy each one to Harbor
+  for REF in $(crane catalog localhost:15000 --insecure 2>/dev/null); do
+    for TAG in $(crane ls localhost:15000/${REF} --insecure 2>/dev/null); do
+      crane copy "localhost:15000/${REF}:${TAG}" \
+        "${HARBOR_HOSTNAME}/${PROJECT}/${REF}:${TAG}" \
+        --insecure 2>&1 | grep -v "^$" || true
+    done
+  done
+
+  kill "${HAULER_PID}" 2>/dev/null; wait "${HAULER_PID}" 2>/dev/null || true
 done
 
 # ---------------------------------------------------------------------------

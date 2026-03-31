@@ -26,6 +26,12 @@ spec:
       version: 2.13.3
       add-images: false
 
+    # NeuVector — container security (chart only; images pulled via hauler store sync --products)
+    - name: core
+      repoURL: https://neuvector.github.io/neuvector-helm/
+      version: 2.8.11
+      add-images: false
+
     # Longhorn — distributed block storage (optional, included for app clusters)
     - name: longhorn
       repoURL: https://charts.longhorn.io
