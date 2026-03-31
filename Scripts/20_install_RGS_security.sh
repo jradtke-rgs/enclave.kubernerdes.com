@@ -7,13 +7,20 @@
 # Prerequisites:
 #   - apps cluster deployed via Rancher Manager (3-node RKE2 on SL-Micro)
 #   - KUBECONFIG saved as ~/.kube/enclave-apps.kubeconfig
-#   - hauler store serving registry on port 5000
+#   - Harbor running at harbor.enclave.kubernerdes.com with neuvector project populated
+#   - Enclave root CA trusted on all apps cluster nodes (see install_RKE2.sh)
+#
+# NOTE: The NeuVector helm chart is NOT currently in Harbor.
+#       Before running, add it to the hauler sync and push to Harbor:
+#         hauler store sync --products neuvector=v<version> (verify chart is included)
+#         hauler store copy --store /root/hauler/store/neuvector registry://harbor.enclave.kubernerdes.com/neuvector
+#       Expected chart path: oci://harbor.enclave.kubernerdes.com/neuvector/hauler/core
 #
 # Reference:
 #   https://open-docs.neuvector.com/deploying/kubernetes
 #   https://ranchermanager.docs.rancher.com/integrations-in-rancher/neuvector
 
-INTERNAL_REGISTRY="10.10.12.10:5000"
+HARBOR_REGISTRY="harbor.enclave.kubernerdes.com"
 NEUVECTOR_VERSION="5.4.9"
 RANCHER_URL="https://rancher.enclave.kubernerdes.com"
 
@@ -34,10 +41,12 @@ kubectl create namespace cattle-neuvector-system
 #   --docker-password="${Carbide_Registry_Password}"
 
 # ---------------------------------------------------------------------------
-# Install NeuVector from hauler registry
+# Install NeuVector from Harbor
+# Chart:  oci://harbor.enclave.kubernerdes.com/neuvector/hauler/core  (verify path after chart is pushed)
+# Images: harbor.enclave.kubernerdes.com/neuvector/neuvector/<image>
 # ---------------------------------------------------------------------------
 helm upgrade --install neuvector \
-  oci://${INTERNAL_REGISTRY}/charts/core \
+  oci://${HARBOR_REGISTRY}/neuvector/hauler/core \
   --version "${NEUVECTOR_VERSION}" \
   --namespace cattle-neuvector-system \
   --set manager.svc.type=ClusterIP \
@@ -47,12 +56,12 @@ helm upgrade --install neuvector \
   --set k3s.enabled=false \
   --set manager.ingress.enabled=false \
   --set global.cattle.url="${RANCHER_URL}" \
-  --set registry="${INTERNAL_REGISTRY}" \
-  --set controller.image.repository="${INTERNAL_REGISTRY}/neuvector/controller" \
-  --set manager.image.repository="${INTERNAL_REGISTRY}/neuvector/manager" \
-  --set cve.scanner.image.repository="${INTERNAL_REGISTRY}/neuvector/scanner" \
-  --set cve.updater.image.repository="${INTERNAL_REGISTRY}/neuvector/updater" \
-  --set enforcer.image.repository="${INTERNAL_REGISTRY}/neuvector/enforcer"
+  --set registry="${HARBOR_REGISTRY}/neuvector" \
+  --set controller.image.repository="${HARBOR_REGISTRY}/neuvector/neuvector/controller" \
+  --set manager.image.repository="${HARBOR_REGISTRY}/neuvector/neuvector/manager" \
+  --set cve.scanner.image.repository="${HARBOR_REGISTRY}/neuvector/neuvector/scanner" \
+  --set cve.updater.image.repository="${HARBOR_REGISTRY}/neuvector/neuvector/updater" \
+  --set enforcer.image.repository="${HARBOR_REGISTRY}/neuvector/neuvector/enforcer"
 
 kubectl -n cattle-neuvector-system rollout status deploy/neuvector-manager-pod
 

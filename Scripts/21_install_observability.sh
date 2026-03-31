@@ -9,12 +9,19 @@
 #   - RKE2 installed on all 3 VMs (Scripts/install_RKE2.sh — observability case)
 #   - KUBECONFIG saved as ~/.kube/enclave-observability.kubeconfig
 #   - O11Y_LICENSE env var set (SUSE Observability license key)
-#   - hauler store serving registry on port 5000
+#   - Harbor running at harbor.enclave.kubernerdes.com with observability images/charts populated
+#   - Enclave root CA trusted on all observability cluster nodes (see install_RKE2.sh)
+#
+# NOTE: SUSE Observability charts are NOT currently in Harbor.
+#       Before running, add them to the hauler sync and push to Harbor.
+#       Expected chart paths (verify after push):
+#         oci://harbor.enclave.kubernerdes.com/<project>/hauler/suse-observability-values
+#         oci://harbor.enclave.kubernerdes.com/<project>/hauler/suse-observability
 #
 # Reference:
 #   https://docs.stackstate.com/
 
-INTERNAL_REGISTRY="10.10.12.10:5000"
+HARBOR_REGISTRY="harbor.enclave.kubernerdes.com"
 RANCHER_URL="https://rancher.enclave.kubernerdes.com"
 O11Y_URL="https://observability.enclave.kubernerdes.com"
 
@@ -29,14 +36,15 @@ CERTMGR_VERSION="v1.18.0"
 kubectl apply -f "https://github.com/cert-manager/cert-manager/releases/download/${CERTMGR_VERSION}/cert-manager.crds.yaml"
 
 helm upgrade --install cert-manager \
-  oci://${INTERNAL_REGISTRY}/charts/cert-manager \
+  oci://${HARBOR_REGISTRY}/third-party-charts/hauler/cert-manager \
   --version "${CERTMGR_VERSION}" \
   --namespace cert-manager \
   --create-namespace \
-  --set image.repository="${INTERNAL_REGISTRY}/jetstack/cert-manager-controller" \
-  --set webhook.image.repository="${INTERNAL_REGISTRY}/jetstack/cert-manager-webhook" \
-  --set cainjector.image.repository="${INTERNAL_REGISTRY}/jetstack/cert-manager-cainjector" \
-  --set startupapicheck.image.repository="${INTERNAL_REGISTRY}/jetstack/cert-manager-startupapicheck"
+  --set crds.enabled=false \
+  --set image.repository="${HARBOR_REGISTRY}/third-party-charts/jetstack/cert-manager-controller" \
+  --set webhook.image.repository="${HARBOR_REGISTRY}/third-party-charts/jetstack/cert-manager-webhook" \
+  --set cainjector.image.repository="${HARBOR_REGISTRY}/third-party-charts/jetstack/cert-manager-cainjector" \
+  --set startupapicheck.image.repository="${HARBOR_REGISTRY}/third-party-charts/jetstack/cert-manager-startupapicheck"
 
 kubectl -n cert-manager rollout status deploy/cert-manager
 
@@ -56,12 +64,12 @@ helm template \
   --set baseUrl="${O11Y_URL}" \
   --set sizing.profile='10-nonha' \
   suse-observability-values \
-  oci://${INTERNAL_REGISTRY}/charts/suse-observability-values \
+  oci://${HARBOR_REGISTRY}/<project>/hauler/suse-observability-values \  # TODO: confirm project after chart is pushed to Harbor
   --output-dir "${VALUES_DIR}"
 
 # Install Observability
 helm upgrade --install suse-observability \
-  oci://${INTERNAL_REGISTRY}/charts/suse-observability \
+  oci://${HARBOR_REGISTRY}/<project>/hauler/suse-observability \  # TODO: confirm project after chart is pushed to Harbor
   --namespace suse-observability \
   --create-namespace \
   --values "${VALUES_DIR}/suse-observability-values/templates/baseConfig_values.yaml" \

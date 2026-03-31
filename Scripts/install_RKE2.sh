@@ -1,4 +1,4 @@
-# install_RKE2.sh — Install RKE2 on a cluster node (airgap from hauler)
+# install_RKE2.sh — Install RKE2 on a cluster node (airgap via Harbor)
 #
 # Not intended to be run as a script — cut and paste sections as needed.
 # Run as root (sudo su -) on each node.
@@ -8,10 +8,11 @@
 #
 # KEY DIFFERENCE FROM COMMUNITY INSTALL:
 #   - Install script fetched from hauler fileserver (not get.rke2.io)
-#   - Container images pulled from hauler registry (not registry.rancher.com)
-#   - system-default-registry redirects all cluster image pulls to internal registry
+#   - Container images pulled from Harbor (harbor.enclave.kubernerdes.com/rke2)
+#   - system-default-registry redirects all cluster image pulls to Harbor/rke2 project
+#   - Enclave root CA must be trusted on each node before rke2-server starts
 
-INTERNAL_REGISTRY="10.10.12.10:5000"
+HARBOR_REGISTRY="harbor.enclave.kubernerdes.com"
 HAULER_FILESERVER="http://10.10.12.10:8080"
 
 # ---------------------------------------------------------------------------
@@ -86,7 +87,7 @@ case $(uname -n) in
   *-01)
     cat << EOF > /etc/rancher/rke2/config.yaml
 token: ${MY_RKE2_TOKEN}
-system-default-registry: ${INTERNAL_REGISTRY}
+system-default-registry: ${HARBOR_REGISTRY}/rke2
 tls-san:
   - ${MY_RKE2_VIP}
   - ${MY_RKE2_HOSTNAME}
@@ -96,7 +97,7 @@ EOF
     cat << EOF > /etc/rancher/rke2/config.yaml
 server: https://${MY_RKE2_VIP}:9345
 token: ${MY_RKE2_TOKEN}
-system-default-registry: ${INTERNAL_REGISTRY}
+system-default-registry: ${HARBOR_REGISTRY}/rke2
 tls-san:
   - ${MY_RKE2_VIP}
   - ${MY_RKE2_HOSTNAME}
@@ -105,14 +106,21 @@ EOF
 esac
 
 # ---------------------------------------------------------------------------
-# registries.yaml — tell RKE2 to use plain HTTP for internal registry
-# Must be in place BEFORE rke2-server starts or it will try HTTPS and fail.
+# Enclave root CA — must be trusted before rke2-server starts so containerd
+# can verify Harbor's TLS certificate.
+# ---------------------------------------------------------------------------
+scp root@10.10.12.10:/etc/ssl/enclave-ca/ca.crt /etc/pki/trust/anchors/enclave-root-ca.crt
+update-ca-certificates
+
+# ---------------------------------------------------------------------------
+# registries.yaml — Harbor uses TLS; no plain-http override needed.
+# Must be in place BEFORE rke2-server starts.
 # ---------------------------------------------------------------------------
 cat << EOF > /etc/rancher/rke2/registries.yaml
 mirrors:
-  "${INTERNAL_REGISTRY}":
+  "${HARBOR_REGISTRY}":
     endpoint:
-      - "http://${INTERNAL_REGISTRY}"
+      - "https://${HARBOR_REGISTRY}"
 EOF
 
 # ---------------------------------------------------------------------------

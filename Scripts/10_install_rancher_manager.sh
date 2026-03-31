@@ -7,12 +7,11 @@
 #   - 3 SL-Micro VMs deployed on Harvester (rancher-01/02/03)
 #   - RKE2 v1.34.x installed on all 3 VMs (see Scripts/install_RKE2.sh)
 #   - KUBECONFIG for the rancher cluster copied to ~/.kube/enclave-rancher.kubeconfig
-#   - hauler services running on nuc-00 (10.10.12.10):
-#       Registry  (port 5000): hauler store serve registry --store /root/hauler/store/rke2
-#       Fileserver (port 8080): hauler store serve fileserver --store /root/hauler/store/files
-#       Also copy third-party-charts store into registry before this script runs:
-#         hauler store copy --store /root/hauler/store/third-party-charts registry://127.0.0.1:5000 --plain-http
-#   - Firewall on nuc-00 allows ports 5000 and 8080 (firewall-cmd --add-port=5000/tcp --permanent ...)
+#   - Harbor running on nuc-00 (harbor.enclave.kubernerdes.com, port 443)
+#       All hauler stores already pushed to Harbor projects via 03_install_harbor.sh
+#   - hauler fileserver still needed for RKE2 install script:
+#       hauler store serve fileserver --store /root/hauler/store/files --port 8080
+#   - Enclave root CA trusted on all cluster nodes (see install_RKE2.sh)
 #
 # Reference:
 #   https://ranchermanager.docs.rancher.com/getting-started/quick-start-guides/deploy-rancher-manager/helm-cli
@@ -39,45 +38,45 @@ kubectl get nodes
 # ---------------------------------------------------------------------------
 # cert-manager — from hauler registry (no public pull)
 # ---------------------------------------------------------------------------
-INTERNAL_REGISTRY="10.10.12.10:5000"
+HARBOR_REGISTRY="harbor.enclave.kubernerdes.com"
 CERTMGR_VERSION="v1.18.0"
 RANCHER_VERSION="2.13.3"        # NOTE: no leading 'v' for helm chart version
 RANCHER_HOSTNAME="rancher.enclave.kubernerdes.com"
 
 kubectl apply -f "https://github.com/cert-manager/cert-manager/releases/download/${CERTMGR_VERSION}/cert-manager.crds.yaml"
 
-# cert-manager chart stored in hauler under hauler/cert-manager (not charts/cert-manager)
-# --plain-http required since hauler registry does not use TLS
+# cert-manager chart in Harbor: third-party-charts/hauler/cert-manager
+# cert-manager images in Harbor: third-party-charts/jetstack/<image>
 helm upgrade --install cert-manager \
-  oci://${INTERNAL_REGISTRY}/hauler/cert-manager \
+  oci://${HARBOR_REGISTRY}/third-party-charts/hauler/cert-manager \
   --version "${CERTMGR_VERSION}" \
   --namespace cert-manager \
   --create-namespace \
-  --plain-http \
   --set crds.enabled=false \
-  --set image.repository="${INTERNAL_REGISTRY}/jetstack/cert-manager-controller" \
-  --set webhook.image.repository="${INTERNAL_REGISTRY}/jetstack/cert-manager-webhook" \
-  --set cainjector.image.repository="${INTERNAL_REGISTRY}/jetstack/cert-manager-cainjector" \
-  --set startupapicheck.image.repository="${INTERNAL_REGISTRY}/jetstack/cert-manager-startupapicheck"
+  --set image.repository="${HARBOR_REGISTRY}/third-party-charts/jetstack/cert-manager-controller" \
+  --set webhook.image.repository="${HARBOR_REGISTRY}/third-party-charts/jetstack/cert-manager-webhook" \
+  --set cainjector.image.repository="${HARBOR_REGISTRY}/third-party-charts/jetstack/cert-manager-cainjector" \
+  --set startupapicheck.image.repository="${HARBOR_REGISTRY}/third-party-charts/jetstack/cert-manager-startupapicheck"
 
 kubectl -n cert-manager rollout status deploy/cert-manager
 
 # ---------------------------------------------------------------------------
-# Rancher Manager — chart from hauler registry (hauler/rancher), images local
+# Rancher Manager — chart from Harbor (third-party-charts/hauler/rancher)
+# Images in Harbor: rancher/rancher/<image>
 # NOTE: Rancher 2.13.x supports Kubernetes <= 1.34.x.
 #       RKE2 must be pinned to v1.34.x (see install_RKE2.sh).
+# NOTE: do NOT set image.repository — systemDefaultRegistry prepends the registry.
+#       Setting both causes a doubled prefix.
 # ---------------------------------------------------------------------------
 helm upgrade --install rancher \
-  oci://${INTERNAL_REGISTRY}/hauler/rancher \
+  oci://${HARBOR_REGISTRY}/third-party-charts/hauler/rancher \
   --version "${RANCHER_VERSION}" \
   --namespace cattle-system \
   --create-namespace \
-  --plain-http \
   --set hostname="${RANCHER_HOSTNAME}" \
   --set replicas=3 \
   --set bootstrapPassword=ChangeMe-RancherBootstrap \
-  --set image.repository="${INTERNAL_REGISTRY}/rancher/rancher" \
-  --set systemDefaultRegistry="${INTERNAL_REGISTRY}"
+  --set systemDefaultRegistry="${HARBOR_REGISTRY}/rancher"
 
 kubectl -n cattle-system rollout status deploy/rancher
 
