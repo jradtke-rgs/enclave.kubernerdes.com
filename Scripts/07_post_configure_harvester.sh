@@ -49,6 +49,7 @@ print(json.dumps({
 ")
 kubectl patch setting containerd-registry --type merge -p "{\"value\":$(python3 -c "import sys,json; print(json.dumps(sys.argv[1]))" "${REGISTRY_JSON}")}"
 echo "    containerd-registry set — nodes will reconfigure containerd on next sync"
+echo "Note: You will need to login to the webUI again."
 
 # Sanitize a string into a valid Kubernetes resource name
 k8s_name() {
