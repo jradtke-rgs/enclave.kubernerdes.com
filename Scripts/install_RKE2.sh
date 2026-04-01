@@ -4,6 +4,8 @@ set -euo pipefail
 # install_RKE2.sh — Install RKE2 on a cluster node (airgap via Harbor)
 #
 # Run as root (sudo su -) on each node.
+#   sudo -i bash ~sles/install_RKE2.sh
+#
 # Used for: rancher cluster, observability cluster, apps cluster
 # Node-aware: *-01 is genesis; subsequent nodes wait and join.
 #
