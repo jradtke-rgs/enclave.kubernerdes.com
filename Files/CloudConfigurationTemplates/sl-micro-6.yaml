@@ -26,11 +26,6 @@ users:
 
 # Commands to run after the system is configured
 runcmd:
-  - - systemctl
-    - enable
-    - --now
-    - qemu-guest-agent.service
-
   # Configure static IP via NetworkManager based on hostname
   - |
     #!/bin/bash
