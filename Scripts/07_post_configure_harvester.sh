@@ -1,9 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+#   RunAs:  root - you need access to the ca.crt file
 # prereqs:  You need a kubeconfig to connect to the Harvester API
 #           Run from nuc-00 (has enclave CA at /etc/ssl/enclave-ca/ca.crt)
-# Usage:    KUBECONFIG=/path/to/harvester-kubeconfig.yaml ./07_post_configure_harvester.sh
+#   Usage:  KUBECONFIG=/path/to/harvester-kubeconfig.yaml ./07_post_configure_harvester.sh
 
 IMAGES_BASE_URL="http://10.10.12.10/images"
 TEMPLATES_BASE_URL="http://10.10.12.10/enclave.kubernerdes.com/Files/CloudConfigurationTemplates"
