@@ -127,7 +127,8 @@ esac
 # Enclave root CA — must be trusted before rke2-server starts so containerd
 # can verify Harbor's TLS certificate.
 # ---------------------------------------------------------------------------
-scp root@10.10.12.10:/etc/ssl/enclave-ca/ca.crt /etc/pki/trust/anchors/enclave-root-ca.crt
+curl -sfL "${HAULER_FILESERVER}/enclave-root-ca.crt" \
+  -o /etc/pki/trust/anchors/enclave-root-ca.crt
 update-ca-certificates
 
 # ---------------------------------------------------------------------------
