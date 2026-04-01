@@ -3,6 +3,15 @@
 # SL-Micro 6.1 Cloud-Init Configuration - Combined (User Data + Network Data)
 # Note: SL-Micro is an immutable OS, so some configurations require special handling
 
+package_update: true
+packages:
+  - qemu-guest-agent
+runcmd:
+  - - systemctl
+    - enable
+    - --now
+    - qemu-guest-agent.service
+
 # Create user accounts with their configuration
 users:
   - name: sles
