@@ -6,6 +6,8 @@ set -euo pipefail
 #           Run from nuc-00 (has enclave CA at /etc/ssl/enclave-ca/ca.crt)
 #   Usage:  KUBECONFIG=/path/to/harvester-kubeconfig.yaml ./07_post_configure_harvester.sh
 
+[ -f ~/.kube/enclave-harvester.kubeconfig ] && { export KUBECONFIG=~/.kube/enclave-harvester.kubeconfig; } || { echo "FAIL: KUBECONFIG not found"; exit 9; }
+
 IMAGES_BASE_URL="http://10.10.12.10/images"
 TEMPLATES_BASE_URL="http://10.10.12.10/enclave.kubernerdes.com/Files/CloudConfigurationTemplates"
 
