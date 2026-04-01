@@ -25,6 +25,13 @@ set -euo pipefail
 
 HAULER_STORE_DIR="${HAULER_STORE_DIR:-/root/hauler/store}"
 HARBOR_HOSTNAME="harbor.enclave.kubernerdes.com"
+
+# Resolve hauler binary — sudo strips /usr/local/bin from PATH
+HAULER=$(command -v hauler 2>/dev/null || echo /usr/local/bin/hauler)
+if [[ ! -x "${HAULER}" ]]; then
+  echo "ERROR: hauler binary not found. Run Scripts/00_install_hauler.sh first."
+  exit 1
+fi
 HARBOR_ADMIN_PASSWORD="Passw0rd01"
 FILESERVER_PORT=8080
 REGISTRY_PORT=5000
@@ -85,7 +92,7 @@ cmd_serve() {
         return 0
       fi
       echo "==> Starting hauler fileserver on port ${FILESERVER_PORT} (background)"
-      nohup hauler store serve fileserver \
+      nohup "${HAULER}" store serve fileserver \
         --store "${store}" \
         --port "${FILESERVER_PORT}" \
         >> /var/log/hauler-fileserver.log 2>&1 &
@@ -115,7 +122,7 @@ cmd_serve() {
         return 0
       fi
       echo "==> Starting hauler registry for store '${store_name}' on port ${REGISTRY_PORT} (background)"
-      nohup hauler store serve registry \
+      nohup "${HAULER}" store serve registry \
         --store "${store}" \
         --port "${REGISTRY_PORT}" \
         --readonly=false \
@@ -192,7 +199,7 @@ push_one_store() {
   echo "==> Pushing ${store_name} → ${HARBOR_HOSTNAME}/${project}"
 
   # Serve the store on an ephemeral port so crane can read it
-  hauler store serve registry \
+  "${HAULER}" store serve registry \
     --store "${store_path}" \
     --port "${PUSH_REGISTRY_PORT}" \
     --readonly=true >> /var/log/hauler-push.log 2>&1 &
