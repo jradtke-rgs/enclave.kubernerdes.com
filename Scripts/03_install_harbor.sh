@@ -22,7 +22,7 @@ set -euo pipefail
 #   HARBOR_HOSTNAME       (default: nuc-00.enclave.kubernerdes.com)
 #   HARBOR_ADMIN_PASSWORD (prompted interactively if not set)
 
-HARBOR_ADMIN_PASSWORD="Passw0rd01"
+HARBOR_ADMIN_PASSWORD="${GENERIC_PASSWORD}"
 
 HARBOR_VERSION="${HARBOR_VERSION:-v2.12.2}"
 HARBOR_HOSTNAME="${HARBOR_HOSTNAME:-harbor.enclave.kubernerdes.com}"

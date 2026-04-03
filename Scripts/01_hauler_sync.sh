@@ -151,7 +151,7 @@ echo "    Per-product stores under: ${HAULER_STORE_DIR}"
 # ---------------------------------------------------------------------------
 HARBOR_REGISTRY="harbor.enclave.kubernerdes.com"
 HARBOR_USER="admin"
-HARBOR_PASS="Passw0rd01"
+HARBOR_PASS="${GENERIC_PASSWORD}"
 
 echo "==> Logging hauler into Harbor"
 hauler login "${HARBOR_REGISTRY}" -u "${HARBOR_USER}" -p "${HARBOR_PASS}"

@@ -13,7 +13,7 @@ TEMPLATES_BASE_URL="http://10.10.12.10/enclave.kubernerdes.com/Files/CloudConfig
 
 CA_DIR="/etc/ssl/enclave-ca"
 HARBOR_REGISTRY="${HARBOR_REGISTRY:-harbor.enclave.kubernerdes.com}"
-HARBOR_ADMIN_PASSWORD="${HARBOR_ADMIN_PASSWORD:-Passw0rd01}"
+HARBOR_ADMIN_PASSWORD="${HARBOR_ADMIN_PASSWORD:-${GENERIC_PASSWORD}}"
 
 # ─────────────────────────────────────────────────────────────────
 # HARBOR INTEGRATION

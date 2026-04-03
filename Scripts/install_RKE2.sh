@@ -154,7 +154,7 @@ configs:
   "harbor.enclave.kubernerdes.com":
     auth:
       username: admin
-      password: Passw0rd01
+      password: ${GENERIC_PASSWORD}
     tls:
       ca_file: /etc/pki/trust/anchors/enclave-root-ca.crt
 EOF
