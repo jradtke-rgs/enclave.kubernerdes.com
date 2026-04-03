@@ -7,6 +7,7 @@ CLUSTERNAME=enclave-harvester
 cp ~/Downloads/local.yaml ~/.kube/$CLUSTERNAME.kubeconfig
 export KUBECONFIG=~/.kube/$CLUSTERNAME.kubeconfig
 sed -i -e 's/harvester.enclave.kubernerdes.com/10.10.12.100/g' $KUBECONFIG
+kubectl get nodes
 
 rename_kube_cluster() {
   export local OLD="${1:-local}"
@@ -23,11 +24,11 @@ rename_kube_cluster() {
 }
 
 # Usage
-rename_kube_cluster local enclave-harvester
+# rename_kube_cluster local enclave-harvester
 
 DESTINATIONS="mansible@10.10.12.10:.kube/
 10.10.12.10:/srv/www/.kube/
-root@10.10.12.10:/srv/www/.kube/"
+root@10.10.12.10:.kube/"
 
 echo "Cut-and-paste the following output"
 

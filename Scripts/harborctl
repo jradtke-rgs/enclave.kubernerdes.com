@@ -11,6 +11,8 @@ set -euo pipefail
 #   harborctl status      — Show container state, health, and cert info
 #   harborctl trustcert   — Re-sign Harbor TLS cert with current enclave CA
 #                           (use after CA rotation), then restart Harbor
+#   harborctl enable      — Install systemd unit so Harbor starts on boot
+#   harborctl disable     — Remove the systemd auto-start unit
 
 HARBOR_INSTALL_DIR="/opt/harbor"
 HARBOR_HOSTNAME="harbor.enclave.kubernerdes.com"
@@ -78,6 +80,39 @@ cmd_status() {
   fi
 }
 
+cmd_enable() {
+  echo "==> Enabling Harbor auto-start on boot"
+  cat << 'UNIT' > /etc/systemd/system/harbor.service
+[Unit]
+Description=Harbor Container Registry
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/harbor
+ExecStart=/usr/bin/docker compose up -d
+ExecStop=/usr/bin/docker compose down
+TimeoutStartSec=180
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+  systemctl daemon-reload
+  systemctl enable harbor.service
+  echo "    Harbor will now start automatically on boot."
+  echo "    Use 'harborctl start' to start Harbor now."
+}
+
+cmd_disable() {
+  echo "==> Disabling Harbor auto-start on boot"
+  systemctl disable harbor.service 2>/dev/null || true
+  rm -f /etc/systemd/system/harbor.service
+  systemctl daemon-reload
+  echo "    Harbor auto-start disabled."
+}
+
 cmd_trustcert() {
   if [[ ! -f "${CA_DIR}/ca.crt" || ! -f "${CA_DIR}/ca.key" ]]; then
     echo "ERROR: Enclave CA not found at ${CA_DIR}. Run 02_setup_ca.sh first."
@@ -124,8 +159,10 @@ case "${1:-}" in
   stop)      cmd_stop ;;
   status)    cmd_status ;;
   trustcert) cmd_trustcert ;;
+  enable)    cmd_enable ;;
+  disable)   cmd_disable ;;
   *)
-    echo "Usage: harborctl {start|stop|status|trustcert}"
+    echo "Usage: harborctl {start|stop|status|trustcert|enable|disable}"
     exit 1
     ;;
 esac

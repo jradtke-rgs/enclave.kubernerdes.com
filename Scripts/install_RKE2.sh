@@ -107,7 +107,7 @@ case $(uname -n) in
   *-01)
     cat << EOF > /etc/rancher/rke2/config.yaml
 token: ${MY_RKE2_TOKEN}
-system-default-registry: ${HARBOR_REGISTRY}/rke2
+system-default-registry: ${HARBOR_REGISTRY}
 tls-san:
   - ${MY_RKE2_VIP}
   - ${MY_RKE2_HOSTNAME}
@@ -117,7 +117,7 @@ EOF
     cat << EOF > /etc/rancher/rke2/config.yaml
 server: https://${MY_RKE2_VIP}:9345
 token: ${MY_RKE2_TOKEN}
-system-default-registry: ${HARBOR_REGISTRY}/rke2
+system-default-registry: ${HARBOR_REGISTRY}
 tls-san:
   - ${MY_RKE2_VIP}
   - ${MY_RKE2_HOSTNAME}
@@ -135,12 +135,28 @@ update-ca-certificates
 
 # ---------------------------------------------------------------------------
 # registries.yaml — must be in place BEFORE rke2-server starts.
+#
+# system-default-registry must be a plain hostname (RFC 3986 URI authority).
+# RKE2 bootstrap pulls images as: {registry}/{original-image-name}, so Harbor
+# must have images at harbor.enclave.kubernerdes.com/rancher/rke2-runtime (no
+# project prefix) — see 01_hauler_sync.sh for correct push target.
+#
+# The rewrite rule handles images that containerd pulls AFTER bootstrap
+# (e.g. CNI, kube-proxy). The bootstrap image pull (rke2-runtime) bypasses
+# registries.yaml entirely — it uses RKE2's own HTTP client.
 # ---------------------------------------------------------------------------
-cat << EOF > /etc/rancher/rke2/registries.yaml
+cat << 'EOF' > /etc/rancher/rke2/registries.yaml
 mirrors:
-  "${HARBOR_REGISTRY}":
+  "harbor.enclave.kubernerdes.com":
     endpoint:
-      - "https://${HARBOR_REGISTRY}"
+      - "https://harbor.enclave.kubernerdes.com"
+configs:
+  "harbor.enclave.kubernerdes.com":
+    auth:
+      username: admin
+      password: Passw0rd01
+    tls:
+      ca_file: /etc/pki/trust/anchors/enclave-root-ca.crt
 EOF
 
 # ---------------------------------------------------------------------------

@@ -28,7 +28,7 @@ HAULER_STORE_DIR=/root/hauler/store
 # Versions — update these when upgrading
 # ---------------------------------------------------------------------------
 RANCHER_VERSION="v2.13.3"
-RKE2_VERSION="v1.35.2+rke2r1"
+RKE2_VERSION="v1.34.4+rke2r1"
 NEUVECTOR_VERSION="v5.4.9"
 HARVESTER_VERSION="v1.7.1"
 PLATFORM="linux/amd64"
@@ -137,6 +137,55 @@ done
 echo
 echo "==> Hauler sync complete."
 echo "    Per-product stores under: ${HAULER_STORE_DIR}"
+
+# ---------------------------------------------------------------------------
+# Step 5 — Push stores to Harbor
+#
+# IMPORTANT: rke2 images are pushed WITHOUT a project prefix so they land at
+#   harbor.enclave.kubernerdes.com/rancher/rke2-runtime:...
+# This matches what system-default-registry: harbor.enclave.kubernerdes.com
+# expects (RFC 3986 authority = hostname only, no path allowed).
+#
+# All other stores use a project prefix that matches Helm systemDefaultRegistry
+# values in the install scripts.
+# ---------------------------------------------------------------------------
+HARBOR_REGISTRY="harbor.enclave.kubernerdes.com"
+HARBOR_USER="admin"
+HARBOR_PASS="Passw0rd01"
+
+echo "==> Logging hauler into Harbor"
+hauler login "${HARBOR_REGISTRY}" -u "${HARBOR_USER}" -p "${HARBOR_PASS}"
+
+echo "==> Pushing rke2 → ${HARBOR_REGISTRY} (no project prefix — images land at ${HARBOR_REGISTRY}/rancher/...)"
+hauler store copy \
+  --store "${HAULER_STORE_DIR}/rke2" \
+  "registry://${HARBOR_REGISTRY}"
+
+echo "==> Pushing rancher → ${HARBOR_REGISTRY}/rancher"
+hauler store copy \
+  --store "${HAULER_STORE_DIR}/rancher" \
+  "registry://${HARBOR_REGISTRY}/rancher"
+
+echo "==> Pushing neuvector → ${HARBOR_REGISTRY}/neuvector"
+hauler store copy \
+  --store "${HAULER_STORE_DIR}/neuvector" \
+  "registry://${HARBOR_REGISTRY}/neuvector"
+
+echo "==> Pushing harvester → ${HARBOR_REGISTRY}/harvester"
+hauler store copy \
+  --store "${HAULER_STORE_DIR}/harvester" \
+  "registry://${HARBOR_REGISTRY}/harvester"
+
+echo "==> Pushing manifest stores → ${HARBOR_REGISTRY}"
+for MANIFEST in "${MANIFEST_DIR}"/*.yaml; do
+  STORE_NAME="$(basename "${MANIFEST}" .yaml)"
+  STORE_PATH="${HAULER_STORE_DIR}/${STORE_NAME}"
+  [[ -d "${STORE_PATH}" ]] || continue
+  echo "    Pushing: ${STORE_NAME} → ${HARBOR_REGISTRY}/${STORE_NAME}"
+  hauler store copy \
+    --store "${STORE_PATH}" \
+    "registry://${HARBOR_REGISTRY}/${STORE_NAME}"
+done
+
 echo
-echo "    Next step: push each store to Harbor:"
-echo "      hauler store copy --store <store> registry://<harbor>/<project>"
+echo "==> Harbor push complete."

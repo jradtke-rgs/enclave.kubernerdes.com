@@ -6,17 +6,21 @@ set -euo pipefail
 # Run as root (or via sudo) on nuc-00.
 #
 # Usage:
-#   haulerctl sync                  — Pull/update all artifacts into hauler stores
-#                                     (version pins live in Scripts/01_hauler_sync.sh)
-#   haulerctl serve [fileserver]    — Start the fileserver in the background (port 8080)
-#                                     Serves RKE2 install script and other binaries to nodes
-#   haulerctl serve registry <store>— Start a store's OCI registry in the background (port 5000)
-#   haulerctl status                — Show store inventory and whether servers are listening
-#   haulerctl push [<store>|all]    — Push store(s) to Harbor via crane
+#   haulerctl sync                   — Pull/update all artifacts into hauler stores
+#                                      (version pins live in Scripts/01_hauler_sync.sh)
+#   haulerctl serve [fileserver]     — Start the fileserver in the background (port 8080)
+#                                      Files served at http://host:8080/<name> (no prefix)
+#   haulerctl serve registry <store> — Start a store's OCI registry (port 5000)
+#   haulerctl status                 — Show store inventory and server state
+#   haulerctl push [<store>|all]     — Push store(s) to Harbor via hauler store copy
+#   haulerctl enable                 — Install systemd units so fileserver starts on boot
+#   haulerctl disable                — Remove the systemd auto-start units
 #
 # Store → Harbor project mapping:
 #   rancher           → harbor/rancher
-#   rke2              → harbor/rke2
+#   rke2              → harbor  (NO project prefix — images land at harbor/rancher/rke2-runtime)
+#                        Required because system-default-registry is RFC 3986 hostname-only;
+#                        the bootstrap image pull constructs: {registry}/{image-name} directly.
 #   neuvector         → harbor/neuvector
 #   harvester         → harbor/harvester
 #   carbide-images    → harbor/carbide
@@ -25,6 +29,12 @@ set -euo pipefail
 
 HAULER_STORE_DIR="${HAULER_STORE_DIR:-/root/hauler/store}"
 HARBOR_HOSTNAME="harbor.enclave.kubernerdes.com"
+HARBOR_ADMIN_USER="admin"
+HARBOR_ADMIN_PASSWORD="Passw0rd01"
+FILESERVER_PORT=8080
+REGISTRY_PORT=5000
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Resolve hauler binary — sudo strips /usr/local/bin from PATH
 HAULER=$(command -v hauler 2>/dev/null || echo /usr/local/bin/hauler)
@@ -32,17 +42,11 @@ if [[ ! -x "${HAULER}" ]]; then
   echo "ERROR: hauler binary not found. Run Scripts/00_install_hauler.sh first."
   exit 1
 fi
-HARBOR_ADMIN_PASSWORD="Passw0rd01"
-FILESERVER_PORT=8080
-REGISTRY_PORT=5000
-PUSH_REGISTRY_PORT=15000   # ephemeral port used during push; avoids clashing with serve
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Store name → Harbor project (files excluded — fileserver only)
+# Store name → Harbor project (empty = no project prefix)
 declare -A STORE_PROJECT=(
   [rancher]="rancher"
-  [rke2]="rke2"
+  [rke2]=""
   [neuvector]="neuvector"
   [harvester]="harvester"
   [carbide-images]="carbide"
@@ -55,15 +59,6 @@ declare -A STORE_PROJECT=(
 port_listening() {
   ss -tlnp 2>/dev/null | grep -q ":${1} " || \
     netstat -tlnp 2>/dev/null | grep -q ":${1} "
-}
-
-require_crane() {
-  if ! command -v crane &>/dev/null; then
-    echo "ERROR: crane is not installed. Install it first:"
-    echo "  CRANE_VERSION=\$(curl -sf https://api.github.com/repos/google/go-containerregistry/releases/latest | python3 -c \"import sys,json; print(json.load(sys.stdin)['tag_name'])\")"
-    echo "  curl -sfL \"https://github.com/google/go-containerregistry/releases/download/\${CRANE_VERSION}/go-containerregistry_Linux_x86_64.tar.gz\" | tar -xz -C /usr/local/bin crane"
-    exit 1
-  fi
 }
 
 # ---------------------------------------------------------------------------
@@ -99,6 +94,7 @@ cmd_serve() {
       sleep 2
       if port_listening "${FILESERVER_PORT}"; then
         echo "    Fileserver is up. Log: /var/log/hauler-fileserver.log"
+        echo "    Files served at: http://$(hostname -I | awk '{print $1}'):${FILESERVER_PORT}/<name>"
       else
         echo "ERROR: Fileserver did not start. Check /var/log/hauler-fileserver.log"
         exit 1
@@ -173,8 +169,15 @@ cmd_status() {
     name="$(basename "${store_dir}")"
     local size
     size="$(du -sh "${store_dir}" 2>/dev/null | cut -f1)"
-    local project="${STORE_PROJECT[${name}]:-fileserver-only}"
-    printf "    %-22s  %6s  → %s\n" "${name}" "${size}" "${project}"
+    local dest
+    if [[ -n "${STORE_PROJECT[${name}]:-}" ]]; then
+      dest="${HARBOR_HOSTNAME}/${STORE_PROJECT[${name}]}"
+    elif [[ "${name}" == "files" ]]; then
+      dest="fileserver-only"
+    else
+      dest="${HARBOR_HOSTNAME} (no prefix)"
+    fi
+    printf "    %-22s  %6s  → %s\n" "${name}" "${size}" "${dest}"
     found=1
   done
 
@@ -184,54 +187,42 @@ cmd_status() {
 }
 
 # ---------------------------------------------------------------------------
-# push
+# push — uses hauler store copy (no crane dependency)
 # ---------------------------------------------------------------------------
 push_one_store() {
   local store_name="$1"
-  local project="${STORE_PROJECT[${store_name}]}"
+  local project="${STORE_PROJECT[${store_name}]:-UNKNOWN}"
   local store_path="${HAULER_STORE_DIR}/${store_name}"
+
+  if [[ "${project}" == "UNKNOWN" ]]; then
+    echo "    Skipping ${store_name} — not in STORE_PROJECT mapping"
+    return 0
+  fi
 
   if [[ ! -d "${store_path}" ]]; then
     echo "    Skipping ${store_name} — store not found at ${store_path}"
     return 0
   fi
 
-  echo "==> Pushing ${store_name} → ${HARBOR_HOSTNAME}/${project}"
-
-  # Serve the store on an ephemeral port so crane can read it
-  "${HAULER}" store serve registry \
-    --store "${store_path}" \
-    --port "${PUSH_REGISTRY_PORT}" \
-    --readonly=true >> /var/log/hauler-push.log 2>&1 &
-  local HAULER_PID=$!
-  sleep 3
-
-  local pushed=0 skipped=0
-  for REF in $(crane catalog "localhost:${PUSH_REGISTRY_PORT}" --insecure 2>/dev/null); do
-    for TAG in $(crane ls "localhost:${PUSH_REGISTRY_PORT}/${REF}" --insecure 2>/dev/null); do
-      local src="localhost:${PUSH_REGISTRY_PORT}/${REF}:${TAG}"
-      local dst="${HARBOR_HOSTNAME}/${project}/${REF}:${TAG}"
-      if crane copy "${src}" "${dst}" --insecure 2>&1 | grep -v "^$"; then
-        pushed=$((pushed + 1))
-      else
-        skipped=$((skipped + 1))
-      fi
-    done
-  done
-
-  kill "${HAULER_PID}" 2>/dev/null || true
-  wait "${HAULER_PID}" 2>/dev/null || true
-
-  echo "    Done: ${pushed} copied, ${skipped} skipped"
+  if [[ -n "${project}" ]]; then
+    echo "==> Pushing ${store_name} → ${HARBOR_HOSTNAME}/${project}"
+    "${HAULER}" store copy \
+      --store "${store_path}" \
+      "registry://${HARBOR_HOSTNAME}/${project}"
+  else
+    echo "==> Pushing ${store_name} → ${HARBOR_HOSTNAME} (no project prefix)"
+    "${HAULER}" store copy \
+      --store "${store_path}" \
+      "registry://${HARBOR_HOSTNAME}"
+  fi
 }
 
 cmd_push() {
   local target="${1:-all}"
-  require_crane
 
-  echo "==> Logging crane into Harbor"
-  crane auth login "${HARBOR_HOSTNAME}" \
-    -u admin \
+  echo "==> Logging hauler into Harbor"
+  "${HAULER}" login "${HARBOR_HOSTNAME}" \
+    -u "${HARBOR_ADMIN_USER}" \
     -p "${HARBOR_ADMIN_PASSWORD}"
 
   if [[ "${target}" == "all" ]]; then
@@ -239,7 +230,7 @@ cmd_push() {
       push_one_store "${store_name}"
     done
   else
-    if [[ -z "${STORE_PROJECT[${target}]:-}" ]]; then
+    if [[ -z "${STORE_PROJECT[${target}]+x}" ]]; then
       echo "ERROR: Unknown store '${target}'."
       echo "Known stores: ${!STORE_PROJECT[*]}"
       exit 1
@@ -249,6 +240,45 @@ cmd_push() {
 
   echo
   echo "==> Push complete. Verify in Harbor: https://${HARBOR_HOSTNAME}"
+}
+
+# ---------------------------------------------------------------------------
+# enable / disable — systemd auto-start for the fileserver
+#
+# The fileserver (port 8080) is the only service that must survive a reboot
+# during a node install run. The registry (port 5000) is only needed during
+# haulerctl push and can be started on demand.
+# ---------------------------------------------------------------------------
+cmd_enable() {
+  echo "==> Enabling hauler fileserver auto-start on boot"
+  cat > /etc/systemd/system/hauler-fileserver.service << UNIT
+[Unit]
+Description=Hauler Fileserver (RKE2 install scripts and binaries)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=${HAULER} store serve fileserver --store ${HAULER_STORE_DIR}/files --port ${FILESERVER_PORT}
+Restart=on-failure
+StandardOutput=append:/var/log/hauler-fileserver.log
+StandardError=append:/var/log/hauler-fileserver.log
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+  systemctl daemon-reload
+  systemctl enable hauler-fileserver.service
+  echo "    Hauler fileserver will start automatically on boot."
+  echo "    Use 'haulerctl serve fileserver' or 'systemctl start hauler-fileserver' to start now."
+}
+
+cmd_disable() {
+  echo "==> Disabling hauler fileserver auto-start on boot"
+  systemctl disable hauler-fileserver.service 2>/dev/null || true
+  rm -f /etc/systemd/system/hauler-fileserver.service
+  systemctl daemon-reload
+  echo "    Hauler fileserver auto-start disabled."
 }
 
 # ---------------------------------------------------------------------------
@@ -264,8 +294,10 @@ case "${1:-}" in
   serve)   shift; cmd_serve "$@" ;;
   status)  cmd_status ;;
   push)    shift; cmd_push "${1:-all}" ;;
+  enable)  cmd_enable ;;
+  disable) cmd_disable ;;
   *)
-    echo "Usage: haulerctl {sync|serve [fileserver|registry <store>]|status|push [<store>|all]}"
+    echo "Usage: haulerctl {sync|serve [fileserver|registry <store>]|status|push [<store>|all]|enable|disable}"
     exit 1
     ;;
 esac
