@@ -100,7 +100,9 @@ if [[ -n "${SUDO_USER:-}" ]]; then
   _USER_HOME=$(getent passwd "${SUDO_USER}" | cut -d: -f6)
   RGS_CREDS="${_USER_HOME}/.bashrc.d/RGS"
 fi
+set +u
 [[ -f "${RGS_CREDS}" ]] && source "${RGS_CREDS}" || true
+set -u
 
 if [[ -z "${Carbide_Registry_Username:-}" || -z "${Carbide_Registry_Password:-}" ]]; then
   echo "ERROR: Carbide credentials not set. Ensure ~/.bashrc.d/RGS is populated for user ${SUDO_USER:-root}."
