@@ -22,43 +22,69 @@
 # Create 3 VMs in Harvester UI (or via API):
 #   - OS: SL-Micro 6.1 (from internal registry or ISO served by nuc-00)
 #   - CPU: 4 vCPU, RAM: 8GB, Disk: 50GB
-#   - Hostnames: rancher-01, rancher-02, rancher-03
+#   - Hostnames: rancher-01, rancher-02, rancher-03  (short names, not FQDN)
 #   - IPs: 10.10.12.211, .212, .213  (static, per DNS zone)
 #
 # Then run Scripts/install_RKE2.sh on each VM (see that script for details).
 
 # ---------------------------------------------------------------------------
-# Retrieve kubeconfig from rancher-01 after RKE2 is up
+# Kubeconfig — check for existing file, validate, bail if not usable
 # ---------------------------------------------------------------------------
-scp sles@rancher-01:.kube/config ~/.kube/enclave-rancher.kubeconfig
-sed -i -e 's/127.0.0.1/10.10.12.210/g' ~/.kube/enclave-rancher.kubeconfig   # use VIP
-export KUBECONFIG=~/.kube/enclave-rancher.kubeconfig
+KUBECONFIG_PATH=~/.kube/enclave-rancher.kubeconfig
+
+if [[ ! -f "${KUBECONFIG_PATH}" ]]; then
+  echo "ERROR: ${KUBECONFIG_PATH} not found."
+  echo "Copy it from rancher-01 with:"
+  echo "  scp sles@10.10.12.211:.kube/config ${KUBECONFIG_PATH}"
+  echo "  sed -i 's/127.0.0.1/10.10.12.210/g' ${KUBECONFIG_PATH}"
+  exit 1
+fi
+
+export KUBECONFIG="${KUBECONFIG_PATH}"
+
+if ! kubectl get nodes --request-timeout=10s > /dev/null 2>&1; then
+  echo "ERROR: kubeconfig at ${KUBECONFIG_PATH} is not valid or cluster is unreachable."
+  echo "Test manually: kubectl --kubeconfig ${KUBECONFIG_PATH} get nodes"
+  exit 1
+fi
+
+echo "==> Cluster reachable. Nodes:"
 kubectl get nodes
 
 # ---------------------------------------------------------------------------
-# cert-manager — from hauler registry (no public pull)
+# Fetch enclave root CA — required for helm to trust Harbor's TLS cert
 # ---------------------------------------------------------------------------
 HARBOR_REGISTRY="harbor.enclave.kubernerdes.com"
 CERTMGR_VERSION="v1.18.0"
 RANCHER_VERSION="2.13.3"        # NOTE: no leading 'v' for helm chart version
 RANCHER_HOSTNAME="rancher.enclave.kubernerdes.com"
+HAULER_FILESERVER="http://10.10.12.10:8080"
+CA_FILE="/tmp/enclave-root-ca.crt"
 
-kubectl apply -f "https://github.com/cert-manager/cert-manager/releases/download/${CERTMGR_VERSION}/cert-manager.crds.yaml"
+curl -sfL "${HAULER_FILESERVER}/enclave-root-ca.crt" -o "${CA_FILE}"
+echo "==> Enclave root CA fetched: ${CA_FILE}"
 
-# cert-manager chart in Harbor: third-party-charts/hauler/cert-manager
-# cert-manager images in Harbor: third-party-charts/jetstack/<image>
+# ---------------------------------------------------------------------------
+# cert-manager — CRDs installed via chart (crds.enabled=true)
+# chart in Harbor: third-party-charts/hauler/cert-manager
+# images in Harbor: third-party-charts/jetstack/<image>
+# ---------------------------------------------------------------------------
 helm upgrade --install cert-manager \
   oci://${HARBOR_REGISTRY}/third-party-charts/hauler/cert-manager \
   --version "${CERTMGR_VERSION}" \
   --namespace cert-manager \
   --create-namespace \
-  --set crds.enabled=false \
+  --ca-file "${CA_FILE}" \
+  --timeout 10m \
+  --set crds.enabled=true \
   --set image.repository="${HARBOR_REGISTRY}/third-party-charts/jetstack/cert-manager-controller" \
   --set webhook.image.repository="${HARBOR_REGISTRY}/third-party-charts/jetstack/cert-manager-webhook" \
   --set cainjector.image.repository="${HARBOR_REGISTRY}/third-party-charts/jetstack/cert-manager-cainjector" \
   --set startupapicheck.image.repository="${HARBOR_REGISTRY}/third-party-charts/jetstack/cert-manager-startupapicheck"
 
-kubectl -n cert-manager rollout status deploy/cert-manager
+echo "==> Waiting for cert-manager webhook to be ready..."
+kubectl -n cert-manager rollout status deploy/cert-manager-webhook --timeout=5m
+kubectl -n cert-manager wait --for=condition=available deploy/cert-manager-webhook --timeout=5m
 
 # ---------------------------------------------------------------------------
 # Rancher Manager — chart from Harbor (third-party-charts/hauler/rancher)
@@ -73,6 +99,7 @@ helm upgrade --install rancher \
   --version "${RANCHER_VERSION}" \
   --namespace cattle-system \
   --create-namespace \
+  --ca-file "${CA_FILE}" \
   --set hostname="${RANCHER_HOSTNAME}" \
   --set replicas=3 \
   --set bootstrapPassword=ChangeMe-RancherBootstrap \

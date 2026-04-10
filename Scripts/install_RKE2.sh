@@ -20,8 +20,11 @@ set -euo pipefail
 #   (rke2-postboot.service) to set up kubeconfig after the mandatory reboot.
 #   On non-SL-Micro nodes the kubeconfig setup runs inline.
 #
+# Node hostnames should be SHORT names (e.g. rancher-01, not FQDN).
+#   hostnamectl set-hostname rancher-01
+#
 # Manual fallback if the one-shot fails:
-#   Run Scripts/install_RKE2_post_install.sh after the node comes back up.
+#   Run Scripts/install_RKE2_postboot.sh after the node comes back up.
 
 if [[ "$(id -u)" -ne 0 ]]; then
   echo "ERROR: This script must be run as root."
@@ -34,7 +37,7 @@ HAULER_FILESERVER="http://10.10.12.10:8080"
 # ---------------------------------------------------------------------------
 # Set cluster-specific variables
 # ---------------------------------------------------------------------------
-case $(uname -n) in
+case $(hostname -s) in
   rancher-0*)
     cat << 'EOF' | tee /root/.rke2.vars
 export MY_CLUSTER=rancher
@@ -63,7 +66,7 @@ export MY_RKE2_HOSTNAME=apps.enclave.kubernerdes.com
 EOF
   ;;
   *)
-    echo "ERROR: Unrecognised hostname '$(uname -n)'. Add a case block for this cluster."
+    echo "ERROR: Unrecognised hostname '$(hostname -s)'. Add a case block for this cluster."
     exit 1
   ;;
 esac
@@ -103,7 +106,7 @@ esac
 # ---------------------------------------------------------------------------
 mkdir -p /etc/rancher/rke2
 
-case $(uname -n) in
+case $(hostname -s) in
   *-01)
     cat << EOF > /etc/rancher/rke2/config.yaml
 token: ${MY_RKE2_TOKEN}
@@ -145,7 +148,7 @@ update-ca-certificates
 # (e.g. CNI, kube-proxy). The bootstrap image pull (rke2-runtime) bypasses
 # registries.yaml entirely — it uses RKE2's own HTTP client.
 # ---------------------------------------------------------------------------
-cat << 'EOF' > /etc/rancher/rke2/registries.yaml
+cat << EOF > /etc/rancher/rke2/registries.yaml
 mirrors:
   "harbor.enclave.kubernerdes.com":
     endpoint:
@@ -162,7 +165,7 @@ EOF
 # ---------------------------------------------------------------------------
 # Install RKE2 — from hauler fileserver (airgap), pinned version
 # ---------------------------------------------------------------------------
-case $(uname -n) in
+case $(hostname -s) in
   *-01) echo "==> Genesis node — installing immediately" ;;
   *)
     SLEEPY_TIME=$(shuf -i 45-90 -n 1)
@@ -184,7 +187,7 @@ export PATH=$PATH:/opt/rke2/bin:/var/lib/rancher/rke2/bin
 # ---------------------------------------------------------------------------
 # Enable and start RKE2
 # ---------------------------------------------------------------------------
-case $(uname -n) in
+case $(hostname -s) in
   *-01) echo "==> Starting rke2-server (genesis)" ;;
   *)
     SLEEPY_TIME=$(shuf -i 45-90 -n 1)
@@ -198,72 +201,30 @@ systemctl enable rke2-server.service --now
 # ---------------------------------------------------------------------------
 # Post-install kubeconfig setup
 #
-# SL-Micro: install a one-shot systemd unit to run after the mandatory
-#           transactional-update reboot. Script continues after scheduling.
-# Other:    run inline — no reboot needed.
+# SL-Micro: copy the postboot script to /var (survives snapshot reboot) and
+#           reboot. After reboot run install_RKE2_postboot.sh manually if it
+#           did not run automatically.
+# Other:    run the postboot script inline — no reboot needed.
 # ---------------------------------------------------------------------------
-setup_kubeconfig() {
-  source /root/.rke2.vars
-  mkdir -p /root/.kube
-  cp /etc/rancher/rke2/rke2.yaml /root/.kube/config
-  chown root /root/.kube/config
-  sed -i -e "s/127.0.0.1/${MY_RKE2_VIP}/g" /root/.kube/config
-
-  mkdir -p ~sles/.kube 2>/dev/null || true
-  cp /root/.kube/config ~sles/.kube/config 2>/dev/null || true
-  chown -R sles ~sles/.kube/ 2>/dev/null || true
-
-  export KUBECONFIG=/root/.kube/config
-  kubectl get nodes
-}
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+POSTBOOT_SCRIPT="${SCRIPT_DIR}/install_RKE2_postboot.sh"
 
 . /etc/*release* 2>/dev/null || true
 case ${NAME:-} in
   SL-Micro)
-    echo "==> SL-Micro detected — scheduling kubeconfig setup for post-reboot"
+    echo "==> SL-Micro detected — copying postboot script and rebooting"
+    cp "${POSTBOOT_SCRIPT}" /var/lib/install_RKE2_postboot.sh
+    chmod 0700 /var/lib/install_RKE2_postboot.sh
 
-    # Write a self-contained post-boot helper
-    cat << 'POSTBOOT' > /usr/local/sbin/rke2-postboot
-#!/bin/bash
-set -euo pipefail
-source /root/.rke2.vars
-mkdir -p /root/.kube
-cp /etc/rancher/rke2/rke2.yaml /root/.kube/config
-chown root /root/.kube/config
-sed -i -e "s/127.0.0.1/${MY_RKE2_VIP}/g" /root/.kube/config
-mkdir -p ~sles/.kube 2>/dev/null || true
-cp /root/.kube/config ~sles/.kube/config 2>/dev/null || true
-chown -R sles ~sles/.kube/ 2>/dev/null || true
-systemctl disable rke2-postboot.service
-rm -f /usr/local/sbin/rke2-postboot /etc/systemd/system/rke2-postboot.service
-echo "==> rke2-postboot: kubeconfig configured."
-POSTBOOT
-    chmod 0700 /usr/local/sbin/rke2-postboot
-
-    cat << 'UNIT' > /etc/systemd/system/rke2-postboot.service
-[Unit]
-Description=RKE2 post-reboot kubeconfig setup (runs once)
-After=rke2-server.service
-Requires=rke2-server.service
-
-[Service]
-Type=oneshot
-ExecStart=/usr/local/sbin/rke2-postboot
-RemainAfterExit=yes
-
-[Install]
-WantedBy=multi-user.target
-UNIT
-    systemctl enable rke2-postboot.service
-
+    echo "==> After reboot, run: sudo bash /var/lib/install_RKE2_postboot.sh"
     echo "==> Rebooting to commit transactional update..."
-    case $(uname -n) in
+    case $(hostname -s) in
       *-01) sleep 5 ;;
       *)    sleep $(shuf -i 30-45 -n 1) ;;
     esac
     shutdown -r now
   ;;
   *)
-    setup_kubeconfig
+    bash "${POSTBOOT_SCRIPT}"
   ;;
 esac

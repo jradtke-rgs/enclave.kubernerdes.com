@@ -12,3 +12,5 @@ sudo apt  install nvtop
 
 docker pull ghcr.io/open-webui/open-webui:ollama
 
+sudo apt install chromium-browser
+

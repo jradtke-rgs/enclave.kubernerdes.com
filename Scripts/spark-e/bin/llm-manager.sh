@@ -191,7 +191,9 @@ engine_api_base() {
 # Docker prerequisite check
 ###############################################################################
 require_docker() {
-  docker info >/dev/null 2>&1 || die "Docker daemon not reachable."
+  if ! docker info >/dev/null 2>&1; then
+    die "Docker daemon not reachable. Please ensure Docker is installed and running."
+  fi
 }
 
 ###############################################################################
@@ -400,7 +402,14 @@ cmd_status() {
   for e in "${ENGINES[@]}"; do
     local cname state="stopped"
     cname=$(engine_container_name "$e")
-    if [[ "$e" == "lmstudio" ]]; then
+    if [[ "$e" == "ollama" ]]; then
+      # Check both Docker container and native ollama process
+      if container_running "${cname}"; then
+        state="running (port $(engine_port "$e"))"
+      elif command -v ollama >/dev/null 2>&1 && curl -s -f "http://localhost:$(engine_port "$e")/api/tags" >/dev/null 2>&1; then
+        state="running (native, port $(engine_port "$e"))"
+      fi
+    elif [[ "$e" == "lmstudio" ]]; then
       if pgrep -f "lmstudio|lms server" >/dev/null 2>&1; then
         state="running (port $(engine_port "$e"))"
       fi
@@ -441,7 +450,9 @@ cmd_update() {
   update_image() {
     local image="$1" label="$2"
     info "Pulling latest ${label} image (${image})..."
-    docker pull "${image}"
+    if ! docker pull "${image}"; then
+      warn "Failed to pull ${label} image (${image}). Continuing..."
+    fi
   }
 
   case "${target}" in
@@ -614,9 +625,15 @@ cmd_self_update() {
   local self
   self="$(realpath "$0")"
   info "Updating ${self} from GitHub..."
-  wget -q -O "${self}.tmp" "${url}" || die "Download failed. Check network/URL."
-  bash -n "${self}.tmp"            || die "Downloaded script failed syntax check — aborting."
-  install -m 0755 -o "$(whoami)" "${self}.tmp" "${self}"
+  if ! wget -q -O "${self}.tmp" "${url}"; then
+    die "Download failed. Check network/URL."
+  fi
+  if ! bash -n "${self}.tmp"; then
+    die "Downloaded script failed syntax check — aborting."
+  fi
+  if ! install -m 0755 -o "$(whoami)" "${self}.tmp" "${self}"; then
+    die "Failed to install updated script."
+  fi
   info "Update complete."
 }
 

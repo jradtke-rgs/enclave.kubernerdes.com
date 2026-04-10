@@ -92,7 +92,9 @@ sudo mount -a
 # 4. Web server (Apache) — serves ISOs, the hauler fileserver, and this repo
 # ---------------------------------------------------------------------------
 sudo zypper --non-interactive install apache2
-sudo sed -i -e 's/Options None/Options +Indexes/g' /etc/apache2/default-server.conf
+sudo sed -i -e 's/Options None/Options +Indexes/g' \
+  -e 's/Options +Indexes$/Options +Indexes +FollowSymLinks/' \
+  /etc/apache2/default-server.conf
 sudo systemctl enable apache2 --now
 sudo firewall-cmd --permanent --add-service=http
 sudo firewall-cmd --permanent --add-service=https
