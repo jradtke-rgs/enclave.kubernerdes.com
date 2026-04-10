@@ -1,19 +1,16 @@
 #!/bin/bash
 set -euo pipefail
 
-# install_RKE2.sh — Install RKE2 on a cluster node (airgap via Harbor)
+# install_RKE2.sh — Install RKE2 on a cluster node (direct from Carbide registry)
 #
-# Run as root (sudo su -) on each node.
-#   sudo -i bash ~sles/install_RKE2.sh
+# Run as root (sudo su -) on each node after copying scripts to sles home.
+#   sudo -i bash ~sles/Scripts/install_RKE2.sh
 #
 # Used for: rancher cluster, observability cluster, apps cluster
 # Node-aware: *-01 is genesis; subsequent nodes wait and join.
 #
-# KEY DIFFERENCE FROM COMMUNITY INSTALL:
-#   - Install script fetched from hauler fileserver (not get.rke2.io)
-#   - Container images pulled from Harbor (harbor.enclave.kubernerdes.com/rke2)
-#   - system-default-registry redirects all cluster image pulls to Harbor/rke2 project
-#   - Enclave root CA must be trusted on each node before rke2-server starts
+# Carbide hardened images are pulled directly from rgcrprod.azurecr.us.
+# Credentials must be in ~/.bashrc.d/RGS (Carbide_Registry_Username / Carbide_Registry_Password).
 #
 # SL-Micro nodes:
 #   After rke2-server starts, this script installs a systemd one-shot
@@ -31,8 +28,20 @@ if [[ "$(id -u)" -ne 0 ]]; then
   exit 1
 fi
 
-HARBOR_REGISTRY="harbor.enclave.kubernerdes.com"
-HAULER_FILESERVER="http://10.10.12.10:8080"
+# Source Carbide credentials — prefer the invoking user's home when run via sudo
+RGS_CREDS="${HOME}/.bashrc.d/RGS"
+if [[ -n "${SUDO_USER:-}" ]]; then
+  _USER_HOME=$(getent passwd "${SUDO_USER}" | cut -d: -f6)
+  RGS_CREDS="${_USER_HOME}/.bashrc.d/RGS"
+fi
+[[ -f "${RGS_CREDS}" ]] && source "${RGS_CREDS}" || true
+
+if [[ -z "${Carbide_Registry_Username:-}" || -z "${Carbide_Registry_Password:-}" ]]; then
+  echo "ERROR: Carbide credentials not set. Ensure ~/.bashrc.d/RGS is populated for user ${SUDO_USER:-root}."
+  exit 1
+fi
+
+CARBIDE_REGISTRY="rgcrprod.azurecr.us"
 
 # ---------------------------------------------------------------------------
 # Set cluster-specific variables
@@ -110,7 +119,7 @@ case $(hostname -s) in
   *-01)
     cat << EOF > /etc/rancher/rke2/config.yaml
 token: ${MY_RKE2_TOKEN}
-system-default-registry: ${HARBOR_REGISTRY}
+system-default-registry: ${CARBIDE_REGISTRY}
 tls-san:
   - ${MY_RKE2_VIP}
   - ${MY_RKE2_HOSTNAME}
@@ -120,7 +129,7 @@ EOF
     cat << EOF > /etc/rancher/rke2/config.yaml
 server: https://${MY_RKE2_VIP}:9345
 token: ${MY_RKE2_TOKEN}
-system-default-registry: ${HARBOR_REGISTRY}
+system-default-registry: ${CARBIDE_REGISTRY}
 tls-san:
   - ${MY_RKE2_VIP}
   - ${MY_RKE2_HOSTNAME}
@@ -129,41 +138,21 @@ EOF
 esac
 
 # ---------------------------------------------------------------------------
-# Enclave root CA — must be trusted before rke2-server starts so containerd
-# can verify Harbor's TLS certificate.
-# ---------------------------------------------------------------------------
-curl -sfL "${HAULER_FILESERVER}/enclave-root-ca.crt" \
-  -o /etc/pki/trust/anchors/enclave-root-ca.crt
-update-ca-certificates
-
-# ---------------------------------------------------------------------------
 # registries.yaml — must be in place BEFORE rke2-server starts.
 #
-# system-default-registry must be a plain hostname (RFC 3986 URI authority).
-# RKE2 bootstrap pulls images as: {registry}/{original-image-name}, so Harbor
-# must have images at harbor.enclave.kubernerdes.com/rancher/rke2-runtime (no
-# project prefix) — see 01_hauler_sync.sh for correct push target.
-#
-# The rewrite rule handles images that containerd pulls AFTER bootstrap
-# (e.g. CNI, kube-proxy). The bootstrap image pull (rke2-runtime) bypasses
-# registries.yaml entirely — it uses RKE2's own HTTP client.
+# Provides auth for the Carbide registry so containerd can pull hardened
+# images during bootstrap and normal cluster operation.
 # ---------------------------------------------------------------------------
 cat << EOF > /etc/rancher/rke2/registries.yaml
-mirrors:
-  "harbor.enclave.kubernerdes.com":
-    endpoint:
-      - "https://harbor.enclave.kubernerdes.com"
 configs:
-  "harbor.enclave.kubernerdes.com":
+  "${CARBIDE_REGISTRY}":
     auth:
-      username: admin
-      password: ${GENERIC_PASSWORD}
-    tls:
-      ca_file: /etc/pki/trust/anchors/enclave-root-ca.crt
+      username: ${Carbide_Registry_Username}
+      password: ${Carbide_Registry_Password}
 EOF
 
 # ---------------------------------------------------------------------------
-# Install RKE2 — from hauler fileserver (airgap), pinned version
+# Install RKE2 — from get.rke2.io, pinned version
 # ---------------------------------------------------------------------------
 case $(hostname -s) in
   *-01) echo "==> Genesis node — installing immediately" ;;
@@ -174,7 +163,7 @@ case $(hostname -s) in
   ;;
 esac
 
-curl -sfL "${HAULER_FILESERVER}/install-rke2.sh" \
+curl -sfL https://get.rke2.io \
   | INSTALL_RKE2_VERSION="${MY_RKE2_VERSION}" sh -
 
 # PATH additions for RKE2 binaries
