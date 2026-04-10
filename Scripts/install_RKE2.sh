@@ -3,8 +3,16 @@ set -euo pipefail
 
 # install_RKE2.sh — Install RKE2 on a cluster node (direct from Carbide registry)
 #
-# Run as root (sudo su -) on each node after copying scripts to sles home.
-#   sudo -i bash ~sles/Scripts/install_RKE2.sh
+# TWO MODES:
+#
+# 1. Orchestrator (run from nuc-00 as mansible):
+#      bash install_RKE2.sh <rancher|observability|apps>
+#    Copies Scripts/ and ~/.bashrc.d/RGS to each node as sles, then fires
+#    the install on all three nodes in parallel via SSH.
+#
+# 2. Node install (run on the node itself as root):
+#      sudo -i bash ~sles/Scripts/install_RKE2.sh
+#    Detected automatically when hostname matches a cluster node pattern.
 #
 # Used for: rancher cluster, observability cluster, apps cluster
 # Node-aware: *-01 is genesis; subsequent nodes wait and join.
@@ -23,6 +31,64 @@ set -euo pipefail
 # Manual fallback if the one-shot fails:
 #   Run Scripts/install_RKE2_postboot.sh after the node comes back up.
 
+# ---------------------------------------------------------------------------
+# ORCHESTRATOR MODE — runs from nuc-00, hostname does not match a cluster node
+# ---------------------------------------------------------------------------
+case $(hostname -s) in
+  rancher-0*|observability-0*|apps-0*)
+    : # node install mode — continue below
+    ;;
+  *)
+    CLUSTER="${1:-}"
+    if [[ -z "${CLUSTER}" ]]; then
+      echo "Usage: $0 <rancher|observability|apps>"
+      exit 1
+    fi
+
+    case "${CLUSTER}" in
+      rancher)        NODES=(rancher-01 rancher-02 rancher-03) ;;
+      observability)  NODES=(observability-01 observability-02 observability-03) ;;
+      apps)           NODES=(apps-01 apps-02 apps-03) ;;
+      *)
+        echo "ERROR: Unknown cluster '${CLUSTER}'. Use: rancher, observability, or apps."
+        exit 1
+        ;;
+    esac
+
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    RGS_CREDS="${HOME}/.bashrc.d/RGS"
+
+    if [[ ! -f "${RGS_CREDS}" ]]; then
+      echo "ERROR: ${RGS_CREDS} not found. Cannot copy Carbide credentials to nodes."
+      exit 1
+    fi
+
+    echo "==> Copying scripts and credentials to ${CLUSTER} nodes"
+    for NODE in "${NODES[@]}"; do
+      echo "    ${NODE}: copying Scripts/ and .bashrc.d/RGS"
+      ssh "sles@${NODE}" "mkdir -p ~/Scripts ~/.bashrc.d"
+      scp "${SCRIPT_DIR}/install_RKE2.sh" \
+          "${SCRIPT_DIR}/install_RKE2_postboot.sh" \
+          "sles@${NODE}:~/Scripts/"
+      scp "${RGS_CREDS}" "sles@${NODE}:~/.bashrc.d/RGS"
+    done
+
+    echo "==> Firing install on all nodes in parallel"
+    for NODE in "${NODES[@]}"; do
+      echo "    ${NODE}: starting install"
+      ssh "sles@${NODE}" "sudo -i bash ~sles/Scripts/install_RKE2.sh" &
+    done
+
+    echo "==> Waiting for all nodes to complete..."
+    wait
+    echo "==> Done. Check each node for errors."
+    exit 0
+    ;;
+esac
+
+# ---------------------------------------------------------------------------
+# NODE INSTALL MODE — must be root
+# ---------------------------------------------------------------------------
 if [[ "$(id -u)" -ne 0 ]]; then
   echo "ERROR: This script must be run as root."
   exit 1
