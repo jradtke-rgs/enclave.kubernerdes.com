@@ -187,3 +187,20 @@ source ~/.hauler/credentials && for repo in rancher/rancher rancher/shell ranche
    $(echo $BODY | python3 -c “import sys,json; tags=json.load(sys.stdin).get(‘tags’,[]); print(‘, \
    ‘.join(tags[:10]))”) ...”; fi; done
 ```
+
+##  Harvester UI extension automatic
+```  export KUBECONFIG=~/.kube/enclave-rancher.kubeconfig
+
+  # Check the UI extension installation status
+  kubectl get managedchart -A
+  kubectl get helmchart -A | grep -i harvester
+  kubectl get apps -A | grep -i harvester
+
+  # Check for extension-related errors
+  kubectl get pods -n cattle-ui-plugin-system
+  kubectl describe pod -n cattle-ui-plugin-system -l app=ui-plugin-operator 2>/dev/null || true
+
+  # Rancher logs for extension errors
+  kubectl logs -n cattle-system -l app=rancher --tail=50 | grep -i "harvester\|extension\|plugin"
+  | tail -20
+```

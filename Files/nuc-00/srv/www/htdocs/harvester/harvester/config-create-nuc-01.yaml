@@ -15,6 +15,24 @@ os:
     - 10.10.12.9
     - 10.10.12.8
     - 8.8.8.8
+  write_files:
+    - path: /etc/rancher/rke2/registries.yaml
+      permissions: '0600'
+      owner: root
+      content: |
+        mirrors:
+          harbor.enclave.kubernerdes.com:
+            endpoint:
+            - https://harbor.enclave.kubernerdes.com
+        configs:
+          harbor.enclave.kubernerdes.com:
+            auth:
+              username: admin
+              password: CHANGEME_GENERIC_PASSWORD
+          rgcrprod.azurecr.us:
+            auth:
+              username: CHANGEME_CARBIDE_USERNAME
+              password: CHANGEME_CARBIDE_PASSWORD
 install:
   skipchecks: true
   mode: create

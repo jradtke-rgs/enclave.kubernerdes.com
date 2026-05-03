@@ -13,12 +13,12 @@ TEMPLATES_BASE_URL="http://10.10.12.10/enclave.kubernerdes.com/Files/CloudConfig
 
 CA_DIR="/etc/ssl/enclave-ca"
 HARBOR_REGISTRY="${HARBOR_REGISTRY:-harbor.enclave.kubernerdes.com}"
-HARBOR_ADMIN_PASSWORD="${HARBOR_ADMIN_PASSWORD:-${GENERIC_PASSWORD}}"
 
 # ─────────────────────────────────────────────────────────────────
 # HARBOR INTEGRATION
-# Must be applied BEFORE importing Harvester into Rancher Manager,
-# so the cattle-cluster-agent can pull from Harbor on first contact.
+# Note: registry credentials (Harbor + Carbide) are baked into
+# /etc/rancher/rke2/registries.yaml via the Harvester PXE install
+# config (write_files). Do not manage containerd-registry here.
 # ─────────────────────────────────────────────────────────────────
 
 echo "==> Configuring Harvester: trust enclave root CA"
@@ -35,21 +35,6 @@ kubectl wait job \
   --timeout=120s \
   -l harvesterhci.io/managed=true \
   -n cattle-system 2>/dev/null || echo "    (jobs may have already completed or timed out — check manually)"
-
-echo "==> Configuring Harvester: containerd registry mirror → Harbor"
-REGISTRY_JSON=$(python3 -c "
-import json
-reg = '${HARBOR_REGISTRY}'
-pw  = '${HARBOR_ADMIN_PASSWORD}'
-print(json.dumps({
-  'Mirrors': {reg: {'Endpoints': ['https://' + reg], 'Rewrites': None}},
-  'Configs': {reg: {'Auth': {'Username': 'admin', 'Password': pw}, 'TLS': None}},
-  'Auths': None
-}))
-")
-kubectl patch setting containerd-registry --type merge -p "{\"value\":$(python3 -c "import sys,json; print(json.dumps(sys.argv[1]))" "${REGISTRY_JSON}")}"
-echo "    containerd-registry set — nodes will reconfigure containerd on next sync"
-echo "Note: You will need to login to the webUI again."
 
 # Sanitize a string into a valid Kubernetes resource name
 k8s_name() {
